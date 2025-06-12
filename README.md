@@ -118,5 +118,8 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- [Camera integration](https://codezup.com/react-native-camera-integration-guide/) - learn how to use react native camera api.
+- [Customized react native components](https://codezup.com/building-custom-ui-components-in-react-native/) - learn how to create customized compoents.
+- [React native form](https://codezup.com/mastering-react-native-forms-validation-user-input/) - handle form input validation.
 
 ---
