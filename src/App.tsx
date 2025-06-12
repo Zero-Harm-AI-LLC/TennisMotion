@@ -12,6 +12,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import RecordScreen from './screens/RecordScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -37,14 +39,8 @@ function HomeScreen() {
 function StatsScreen() {
   return <View style={styles.center}><Text>Stats</Text></View>;
 }
-function RecordScreen() {
-  return <View style={styles.center}><Text>Record</Text></View>;
-}
 function CommunityScreen() {
   return <View style={styles.center}><Text>Community</Text></View>;
-}
-function ProfileScreen() {
-  return <View style={styles.center}><Text>Profile</Text></View>;
 }
 
 export default function App() {

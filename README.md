@@ -13,11 +13,16 @@ TennisMotion is an AI-powered coaching application that helps players refine the
 ### Prerequisites
 - Node.js
 - Android Studio or Xcode (for running on device/emulator)
+- VS Code as integrated development environment
 
 ### Install dependencies
 
 ```sh
+# Using npm
 npm install
+
+# OR using Yarn
+yarn install
 ```
 
 ### Step 1: Start Metro
@@ -48,11 +53,11 @@ npm run android
 yarn android
 ```
 
-### iOS
+### iOS Prerequisites 
 
 For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+The first time you start a project, run the Ruby bundler to install CocoaPods itself:
 
 ```sh
 bundle install
@@ -65,6 +70,8 @@ bundle exec pod install
 ```
 
 For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+
+### iOS
 
 ```sh
 # Using npm
@@ -111,7 +118,10 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- [Camera integration](https://codezup.com/react-native-camera-integration-guide/) - learn how to use react native camera api.
+- [Customized react native components](https://codezup.com/building-custom-ui-components-in-react-native/) - learn how to create customized compoents.
+- [React native form](https://codezup.com/mastering-react-native-forms-validation-user-input/) - handle form input validation.
+- [Asynch Storage](https://codezup.com/offline-first-react-native-implementing-asyncstorage-for-robust-apps/) - Offline-First React Native: Implementing AsyncStorage for Robust Apps.
+- [React Native Animations](https://codezup.com/react-native-animations-guide-ui-transitions/) - Build Engaging UI Transitions.
 
 ---
-
-Replace splash screen and icons with your own assets for production.
