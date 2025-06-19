@@ -14,7 +14,7 @@ import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import RecordScreen from './screens/RecordScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import CameraExample from './screens/CameraExample';
+import AnalyzeScreen from './screens/AnalyzeScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -70,7 +70,7 @@ export default function App() {
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Stats" component={StatsScreen} />
-        <Tab.Screen name="Record" component={CameraExample} />
+        <Tab.Screen name="Record" component={AnalyzeScreen} />
         <Tab.Screen name="Community" component={CommunityScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
