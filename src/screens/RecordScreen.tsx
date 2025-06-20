@@ -1,102 +1,110 @@
 import React, { useRef, useState } from 'react';
-import { View, Button, Text, StyleSheet, Platform, PermissionsAndroid, Modal } from 'react-native';
-import { Camera, useCameraDevices, VideoFile } from 'react-native-vision-camera';
+import { View, Text, StyleSheet, Button, PermissionsAndroid, Platform, Modal, Alert } from 'react-native';
+import { RNCamera } from 'react-native-camera';
 import Video from 'react-native-video';
+import CameraRoll from '@react-native-camera-roll/camera-roll';
+import RNFS from 'react-native-fs';
 
 export default function RecordScreen() {
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<RNCamera>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [showPlayer, setShowPlayer] = useState(false);
-  const devices = useCameraDevices();
-  const device = devices.back;
 
+  // Request permissions for Android
   React.useEffect(() => {
     (async () => {
-      const cameraPermission = await Camera.requestCameraPermission();
-      const micPermission = await Camera.requestMicrophonePermission();
       if (Platform.OS === 'android') {
-        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
         await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
+        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
       }
     })();
   }, []);
 
+  // Save video to Photos/Gallery
+  const saveToCameraRoll = async (uri: string) => {
+    try {
+      await CameraRoll.save(uri, { type: 'video' });
+      Alert.alert('Saved', 'Video saved to Photos');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save video');
+    }
+  };
+
+  // Start recording
   const startRecording = async () => {
-    if (cameraRef.current && device) {
+    if (cameraRef.current) {
       setIsRecording(true);
       try {
-        const video = await cameraRef.current.startRecording({
-          onRecordingFinished: (video: VideoFile) => {
-            setVideoUri(video.path);
-            setIsRecording(false);
-          },
-          onRecordingError: (error) => {
-            console.warn(error);
-            setIsRecording(false);
-          },
-        });
-      } catch (e) {
-        console.warn(e);
+        const data = await cameraRef.current.recordAsync();
         setIsRecording(false);
+        setVideoUri(data.uri);
+        await saveToCameraRoll(data.uri);
+      } catch (e) {
+        setIsRecording(false);
+        Alert.alert('Error', 'Recording failed');
       }
     }
   };
 
+  // Stop recording
   const stopRecording = () => {
     if (cameraRef.current && isRecording) {
       cameraRef.current.stopRecording();
     }
   };
 
-  if (!device) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading camera...</Text>
-      </View>
-    );
-  }
+  // Play video from Photos folder
+  const handlePlayVideo = async () => {
+    if (!videoUri) {
+      Alert.alert('No video', 'No video to play');
+      return;
+    }
+    setShowPlayer(true);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recording</Text>
-      <Camera
+      <Text style={styles.title}>Record</Text>
+      <RNCamera
         ref={cameraRef}
         style={styles.preview}
-        device={device}
-        isActive={true}
-        video={true}
-        audio={true}
+        type={RNCamera.Constants.Type.front}
+        captureAudio={true}
       />
       <View style={styles.controls}>
         {!isRecording ? (
-          <Button title="Start Recording" onPress={startRecording} />
+          <Button title="Record Video" onPress={startRecording} />
         ) : (
           <Button title="Stop Recording" onPress={stopRecording} color="#d63031" />
         )}
+        <View style={{ width: 16 }} />
+        <Button
+          title="Playback Video"
+          onPress={handlePlayVideo}
+          disabled={!videoUri}
+        />
       </View>
-      {videoUri && (
-        <>
-          <Text>Video saved at: {videoUri}</Text>
-          <Button title="Play Video" onPress={() => setShowPlayer(true)} />
-          <Modal
-            visible={showPlayer}
-            animationType="slide"
-            onRequestClose={() => setShowPlayer(false)}
-            transparent={true}
-          >
-            <View style={styles.modalContainer}>
-              <Video
-                source={{ uri: videoUri }}
-                style={styles.videoPlayer}
-                controls
-                resizeMode="contain"
-              />
-              <Button title="Close" onPress={() => setShowPlayer(false)} />
-            </View>
-          </Modal>
-        </>
-      )}
+      <Modal
+        visible={showPlayer}
+        animationType="slide"
+        onRequestClose={() => setShowPlayer(false)}
+        transparent={true}
+      >
+        <View style={styles.modalContainer}>
+          {videoUri && (
+            <Video
+              source={{ uri: videoUri }}
+              style={styles.videoPlayer}
+              controls
+              resizeMode="contain"
+            />
+          )}
+          <Button title="Close" onPress={() => setShowPlayer(false)} />
+        </View>
+      </Modal>
     </View>
   );
 }
