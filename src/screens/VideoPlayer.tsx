@@ -109,21 +109,15 @@ const VideoPlayer = () => {
       <View style={styles.controlsOverlay}>
         {!isRecording ? (
           <TouchableOpacity style={styles.recordButton} onPress={handleStartRecording}>
-            <Icon name="record-circle" size={72} color="red" />
-            <Text style={styles.controlText}>Record</Text>
+            <Icon name="record" size={64} color="#ff0000" />
+            <Text style={styles.controlText}>Start Recording</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.stopButton} onPress={handleStopRecording}>
-            <Icon name="stop-circle" size={72} color="#fff" />
-            <Text style={styles.controlText}>Stop</Text>
+            <Icon name="stop" size={64} color="#ffffff" />
+            <Text style={styles.controlText}>Stop Recording</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity
-          style={[styles.stopButton, { position: 'absolute', top: 10, right: 20 }]}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="close" size={36} color="#fff" />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -133,23 +127,23 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black'},
   controlsOverlay: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 0,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   recordButton: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   stopButton: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   controlText: {
     color: '#fff',
-    fontSize: 18,
-    marginTop: 4,
+    fontSize: 16,
+    marginTop: 0,
     fontWeight: 'bold',
   },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },

@@ -15,7 +15,6 @@ import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import VideoScreen from './screens/VideoScreen';
 import VideoPlayer from './screens/VideoPlayer';  
 import ProfileScreen from './screens/ProfileScreen';
-import AnalyzeScreen from './screens/AnalyzeScreen';
 import { VideoProvider } from './context/VideoContext';
 
 const Tab = createBottomTabNavigator();
@@ -37,14 +36,14 @@ function SplashScreen() {
 }
 
 // Placeholder views for tabs
-function HomeScreen() {
-  return <View style={styles.center}><Text>Home</Text></View>;
-}
 function StatsScreen() {
   return <View style={styles.center}><Text>Stats</Text></View>;
 }
-function CommunityScreen() {
-  return <View style={styles.center}><Text>Community</Text></View>;
+function SessionsScreen() {
+  return <View style={styles.center}><Text>Sessions</Text></View>;
+}
+function MoreScreen() {
+  return <View style={styles.center}><Text>More</Text></View>;
 }
 
 const VideoStack = () => (
@@ -69,24 +68,24 @@ export default function App() {
           }: { route: RouteProp<ParamListBase, string> }) => ({
             tabBarIcon: ({ color, size }: { color: string; size: number }) => {
               let iconName = '';
-              if (route.name === 'Home') iconName = 'tennis';
-              else if (route.name === 'Stats') iconName = 'chart-bar';
-              else if (route.name === 'Record') iconName = 'video';
-              else if (route.name === 'Analyze') iconName = 'account-group';
+              if (route.name === 'Stats') iconName = 'chart-bar';
+              else if (route.name === 'Sessions') iconName = 'tennis-ball';
+              else if (route.name === 'Coaching') iconName = 'account-group';
               else if (route.name === 'Profile') iconName = 'account';
+              else if (route.name === 'More') iconName = 'dots-horizontal';
               return <Icon name={iconName} size={size} color={color} />;
             },
             tabBarLabelStyle: { fontSize: 12 },
             tabBarActiveTintColor: '#00b894',
             tabBarInactiveTintColor: 'gray',
-            headerShown: false, // <-- Add this line
+            headerShown: false, // <-- Add this line to hide the header
           }) as BottomTabNavigationOptions}
         >
-          <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Stats" component={StatsScreen} />
-          <Tab.Screen name="Record" component={AnalyzeScreen} />
-          <Tab.Screen name="Analyze" component={VideoStack} />
+          <Tab.Screen name="Sessions" component={SessionsScreen} />
+          <Tab.Screen name="Coaching" component={VideoStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
+          <Tab.Screen name="More" component={MoreScreen} />
         </Tab.Navigator>
       </NavigationContainer>
     </VideoProvider>
