@@ -6,6 +6,7 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { request, PERMISSIONS } from 'react-native-permissions';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { createThumbnail } from 'react-native-create-thumbnail';
 
 type RootStackParamList = {
   VideoScreen: undefined;
@@ -45,6 +46,21 @@ const VideoPlayer = () => {
     })();
   }, []);
 
+  // Create thumbnail for the video
+  const createVideoThumbnail = async (videoUri: string) => {    
+    try {
+      const thumbnail = await createThumbnail({
+        url: videoUri,
+        timeStamp: 1000, // 1 second into the video
+      });
+      return thumbnail.path;
+    } catch (error) {
+      console.error('Error creating thumbnail:', error);
+      return null;
+    }
+  }
+
+  // Handle start recording
   const handleStartRecording = useCallback(async () => {
     if (!cameraRef.current || isRecording) return;
     setIsRecording(true);
@@ -52,9 +68,10 @@ const VideoPlayer = () => {
       await cameraRef.current.startRecording({
         onRecordingFinished: async (video) => {
           try {
-            await CameraRoll.save(video.path, { type: 'video' });
-            addVideo({ id: Date.now().toString(), uri: video.path });
-            navigation.goBack();
+            const videoUri = video.path.startsWith('file://') ? video.path : `file://${video.path}`;
+            await CameraRoll.save(videoUri, { type: 'video' });
+            const posterUri = await createVideoThumbnail(videoUri);
+            addVideo({ id: Date.now().toString(), uri: videoUri, poster: posterUri || undefined });
           } catch (e) {
             Alert.alert('Error', 'Failed to save video to gallery.');
           }

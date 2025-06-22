@@ -70,7 +70,7 @@ export default function App() {
               let iconName = '';
               if (route.name === 'Stats') iconName = 'chart-bar';
               else if (route.name === 'Sessions') iconName = 'tennis-ball';
-              else if (route.name === 'Coaching') iconName = 'account-group';
+              else if (route.name === 'Coaching') iconName = 'account-multiple';
               else if (route.name === 'Profile') iconName = 'account';
               else if (route.name === 'More') iconName = 'dots-horizontal';
               return <Icon name={iconName} size={size} color={color} />;
