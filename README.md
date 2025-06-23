@@ -24,6 +24,8 @@ npm install
 # OR using Yarn
 yarn install
 ```
+### Handle fonts
+[Install the fonts and icons](https://www.npmjs.com/package/react-native-vector-icons#icon-component)
 
 ### Step 1: Start Metro
 
