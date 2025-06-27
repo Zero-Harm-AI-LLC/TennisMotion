@@ -1,24 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
-import { Camera } from 'react-native-vision-camera';
+import { Camera } from '../components/PoseCamera';
 import { useCameraDevices } from 'react-native-vision-camera';
+import { 
+  requestGalleryPermission, 
+  requestCameraPermission,
+  requestMicrophonePermission
+} from '../utils/permissions';
 
 const { width, height } = Dimensions.get('window');
 
 export default function PoseScreen() {
   const [pose, setPose] = useState<any>(null);
-  const [hasPermission, setHasPermission] = useState(false);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
 
+  // Request permissions on mount
   useEffect(() => {
     (async () => {
-      const status = await Camera.requestCameraPermission();
-      setHasPermission(status === 'authorized');
+      const cameraStatus = await requestCameraPermission();
+      const micStatus = await requestMicrophonePermission();
+      const galleryStatus = await requestGalleryPermission();
+      setPermissionsGranted(
+        cameraStatus === 'granted' &&
+        micStatus === 'granted' &&
+        galleryStatus === 'granted'
+      );
     })();
   }, []);
 
-  if (!device || !hasPermission) {
+  if (!device || !permissionsGranted) {
     return (
       <SafeAreaView style={styles.centered}>
         <Text style={styles.permissionText}>Requesting camera permission...</Text>

@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Platform, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import { request, PERMISSIONS } from 'react-native-permissions';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import { 
+  requestGalleryPermission, 
+  requestCameraPermission,
+  requestMicrophonePermission
+} from '../utils/permissions';
 
 type RootStackParamList = {
   VideoScreen: undefined;
@@ -23,20 +27,11 @@ const VideoPlayer = () => {
   const [isRecording, setIsRecording] = useState(false);
   const { addVideo } = useVideoContext();
 
-  const requestGalleryPermission = async () => {
-    const result = await request(
-      Platform.OS === 'ios'
-        ? PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY
-        : PERMISSIONS.ANDROID.READ_MEDIA_VIDEO
-    );
-    return result;
-  };
-
   // Request permissions on mount
   useEffect(() => {
     (async () => {
-      const cameraStatus = await Camera.requestCameraPermission();
-      const micStatus = await Camera.requestMicrophonePermission();
+      const cameraStatus = await requestCameraPermission();
+      const micStatus = await requestMicrophonePermission();
       const galleryStatus = await requestGalleryPermission();
       setPermissionsGranted(
         cameraStatus === 'granted' &&
@@ -95,21 +90,11 @@ const VideoPlayer = () => {
     }
   }, [isRecording]);
 
-  if (!permissionsGranted) {
+  if (!device || !permissionsGranted) {
     return (
-      <View style={styles.centered}>
-        <Text style={{ color: 'red', textAlign: 'center' }}>
-          Camera, microphone, or gallery permissions are required.
-        </Text>
-      </View>
-    );
-  }
-
-  if (!device) {
-    return (
-      <View style={styles.centered}>
-        <Text>Loading camera...</Text>
-      </View>
+      <SafeAreaView style={styles.centered}>
+        <Text style={styles.permissionText}>Requesting camera permission...</Text>
+      </SafeAreaView>
     );
   }
 
@@ -163,7 +148,16 @@ const styles = StyleSheet.create({
     marginTop: 0,
     fontWeight: 'bold',
   },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
+  centered: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#000' 
+  },
+  permissionText: {
+    color: '#fff',
+    fontSize: 18,
+  },
 });
 
 export default VideoPlayer;
