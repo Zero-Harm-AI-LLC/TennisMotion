@@ -18,4 +18,11 @@ buildscript {
     }
 }
 
+// Disable all Javadoc tasks for all modules
+allprojects {
+    tasks.withType(Javadoc).all {
+        enabled = false
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"
