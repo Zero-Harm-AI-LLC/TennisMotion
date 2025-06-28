@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
-import { runOnJS } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
 
@@ -10,7 +10,7 @@ const { width, height } = Dimensions.get('window');
 const PoseScreen = () => {
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const [pose, setPose] = useState(null);
+  const pose = useSharedValue(null);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
 
   // Request permissions on mount
@@ -33,9 +33,9 @@ const PoseScreen = () => {
     const result = detectPose(frame);
     // Use runOnJS to update state in the React context
     // This is necessary because the frame processor runs on a separate thread
-    console.log('Pose result:', result);
-    //runOnJS(setPose)(result);
-  }, []);
+    pose.value = result;
+    console.log('Pose result:', pose.value);
+  }, [pose]);
 
   if (!device || !permissionsGranted) {
     return (
@@ -56,7 +56,7 @@ const PoseScreen = () => {
       />
       <View style={styles.overlay}>
         <Text style={styles.poseText}>
-          {pose ? JSON.stringify(pose, null, 2) : 'Detecting pose...'}
+          {pose.value ? JSON.stringify(pose.value, null, 2) : 'Detecting pose...'}
         </Text>
       </View>
     </View>
