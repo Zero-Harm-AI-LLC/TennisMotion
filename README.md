@@ -123,7 +123,7 @@ To learn more about React Native, take a look at the following resources:
 - [Camera integration](https://codezup.com/react-native-camera-integration-guide/) - learn how to use react native camera api.
 - [Customized react native components](https://codezup.com/building-custom-ui-components-in-react-native/) - learn how to create customized compoents.
 - [React native form](https://codezup.com/mastering-react-native-forms-validation-user-input/) - handle form input validation.
-- [Asynch Storage](https://codezup.com/offline-first-react-native-implementing-asyncstorage-for-robust-apps/) - Offline-First React Native: Implementing AsyncStorage for Robust Apps.
+- [Async Storage](https://codezup.com/offline-first-react-native-implementing-asyncstorage-for-robust-apps/) - Offline-First React Native: Implementing AsyncStorage for Robust Apps.
 - [React Native Animations](https://codezup.com/react-native-animations-guide-ui-transitions/) - Build Engaging UI Transitions.
 
 ---

@@ -9,16 +9,19 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Button, Text, StyleSheet, ActivityIndicator, Modal, TextInput } from 'react-native';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import VideoScreen from './screens/VideoScreen';
 import VideoPlayer from './screens/VideoPlayer';  
 import ProfileScreen from './screens/ProfileScreen';
 import { VideoProvider } from './context/VideoContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ProfileSetup from './screens/ProfileSetup'
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const isProfileSetupNeeded = AsyncStorage.getItem("Name") === null;
 
 // Splash Screen
 function SplashScreen() {
@@ -87,6 +90,11 @@ export default function App() {
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />
         </Tab.Navigator>
+        <View>
+          {isProfileSetupNeeded ? (
+            <ProfileSetup />
+          ) : null}
+        </View>
       </NavigationContainer>
     </VideoProvider>
   );
