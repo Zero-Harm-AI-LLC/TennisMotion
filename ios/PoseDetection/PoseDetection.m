@@ -6,10 +6,10 @@
 #import <VisionCamera/Frame.h>
 @import MLKitVision;
 
-@interface VisionCameraV3PoseDetectionPlugin : FrameProcessorPlugin
+@interface PoseDetectionPlugin : FrameProcessorPlugin
 @end
 
-@implementation VisionCameraV3PoseDetectionPlugin{
+@implementation PoseDetectionPlugin{
     MLKPoseDetectorOptions *options;
 }
 
@@ -230,7 +230,7 @@
     return data;
 }
 
-VISION_EXPORT_FRAME_PROCESSOR(VisionCameraV3PoseDetectionPlugin, detectPose)
+VISION_EXPORT_FRAME_PROCESSOR(PoseDetectionPlugin, detectPose)
 
 @end
 

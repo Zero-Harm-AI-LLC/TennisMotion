@@ -1,4 +1,4 @@
-package com.visioncamerav3posedetection
+package com.tennismotion.posedetection
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
@@ -6,16 +6,13 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 import com.mrousavy.camera.frameprocessors.FrameProcessorPluginRegistry
 
-
-class VisionCameraV3PoseDetectionPackage : ReactPackage {
-
- companion object {
+class PoseDetectionPluginPackage : ReactPackage {
+  companion object {
     init {
-      FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectPose") {proxy,options ->
-        VisionCameraV3PoseDetectionModule(proxy,options)
+      FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectPose") { proxy, options ->
+        PoseDetectionPlugin(proxy, options)
       }
     }
-
   }
 
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
@@ -26,4 +23,3 @@ class VisionCameraV3PoseDetectionPackage : ReactPackage {
     return emptyList()
   }
 }
-

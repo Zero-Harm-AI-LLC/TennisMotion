@@ -1,8 +1,3 @@
-import type { CameraProps } from 'react-native-vision-camera';
-export type {
-  Frame,
-  FrameProcessorPlugin,
-} from 'react-native-vision-camera';
 
 export type PoseType = {
   leftShoulderX: { ['x']: number; ['y']: number };
@@ -71,8 +66,3 @@ export interface PoseDetectionOptions {
   // @default min
   performanceMode?: 'min' | 'max';
 }
-
-export type CameraTypes = {
-  callback: Function;
-  options: PoseDetectionOptions;
-} & CameraProps;

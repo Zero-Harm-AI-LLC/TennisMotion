@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
-import { Camera } from '../components/PoseCamera';
-import { useCameraDevices } from 'react-native-vision-camera';
-import { 
-  requestGalleryPermission, 
-  requestCameraPermission,
-  requestMicrophonePermission
-} from '../utils/permissions';
+import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
+import { runOnJS } from 'react-native-reanimated';
+import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
+import { detectPose } from '../utils/detectPose'; 
 
 const { width, height } = Dimensions.get('window');
 
-export default function PoseScreen() {
-  const [pose, setPose] = useState<any>(null);
+const PoseScreen = () => {
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
+  const [pose, setPose] = useState(null);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
 
   // Request permissions on mount
@@ -30,6 +27,16 @@ export default function PoseScreen() {
     })();
   }, []);
 
+  const frameProcessor = useFrameProcessor((frame) => {
+    'worklet';
+    // Call your native plugin by name
+    const result = detectPose(frame);
+    // Use runOnJS to update state in the React context
+    // This is necessary because the frame processor runs on a separate thread
+    console.log('Pose result:', result);
+    //runOnJS(setPose)(result);
+  }, []);
+
   if (!device || !permissionsGranted) {
     return (
       <SafeAreaView style={styles.centered}>
@@ -44,11 +51,8 @@ export default function PoseScreen() {
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
-        options={{
-          mode: 'stream',
-          performanceMode: 'max',
-        }}
-        callback={(data: any) => setPose(data)}
+        videoStabilizationMode="off"
+        frameProcessor={frameProcessor}
       />
       <View style={styles.overlay}>
         <Text style={styles.poseText}>
@@ -94,3 +98,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+
+export default PoseScreen;

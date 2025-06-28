@@ -1,21 +1,22 @@
-package com.visioncamerav3posedetection
+package com.tennismotion.posedetection
 
-import android.media.Image
+import android.util.Log
+import android.media.Image;
 import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.mrousavy.camera.frameprocessors.Frame
+import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
+import com.mrousavy.camera.frameprocessors.VisionCameraProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.PoseLandmark
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
-import com.mrousavy.camera.frameprocessors.Frame
-import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
-import com.mrousavy.camera.frameprocessors.VisionCameraProxy
 import com.mrousavy.camera.core.types.Orientation
 import java.util.HashMap
 
-class VisionCameraV3PoseDetectionModule(proxy : VisionCameraProxy, options: Map<String, Any>?): FrameProcessorPlugin() {
+class PoseDetectionPlugin(proxy: VisionCameraProxy, options: Map<String, Any>?): FrameProcessorPlugin() {
 
   override fun callback(frame: Frame, arguments: Map<String, Any>?): HashMap<String, Any?> {
     try {
@@ -27,7 +28,15 @@ class VisionCameraV3PoseDetectionModule(proxy : VisionCameraProxy, options: Map<
       val poseDetector = PoseDetection.getClient(options.build())
       val mediaImage: Image = frame.image
       val orientation: Orientation = frame.orientation
-      val image = InputImage.fromMediaImage(mediaImage, orientation.toSurfaceRotation())
+      fun toDegrees(orientation: Orientation) : Int =
+        when (orientation) {
+          Orientation.PORTRAIT -> 0
+          Orientation.LANDSCAPE_RIGHT -> 90
+          Orientation.PORTRAIT_UPSIDE_DOWN -> 180
+          Orientation.LANDSCAPE_LEFT -> 270
+        }
+      Log.d("PoseDetector", "Orientation " + orientation)
+      val image = InputImage.fromMediaImage(mediaImage, toDegrees(orientation))
       val task: Task<Pose> = poseDetector.process(image)
       val pose: Pose = Tasks.await(task)
       val map = WritableNativeMap()
@@ -35,7 +44,7 @@ class VisionCameraV3PoseDetectionModule(proxy : VisionCameraProxy, options: Map<
         val landmarkMap = WritableNativeMap()
         landmarkMap.putDouble("x", landmark?.position?.x?.toDouble() ?: 0.0)
         landmarkMap.putDouble("y", landmark?.position?.y?.toDouble() ?: 0.0)
-
+        Log.d("PoseDetector", "landmark " + landmarkName)
         map.putMap(landmarkName, landmarkMap)
       }
       if (pose.allPoseLandmarks.isNotEmpty()){
@@ -79,6 +88,3 @@ class VisionCameraV3PoseDetectionModule(proxy : VisionCameraProxy, options: Map<
     }
   }
 }
-
-
-

@@ -1,23 +1,20 @@
-import { Platform } from 'react-native';
-import type {
-  Frame,
-  FrameProcessorPlugin,
-  PoseDetectionOptions,
-} from './types';
-import { VisionCameraProxy } from 'react-native-vision-camera';
+import type { PoseDetectionOptions } from './types';
+import { VisionCameraProxy, FrameProcessorPlugin, Frame } from 'react-native-vision-camera';
 
 const LINKING_ERROR: string =
-  `The package 'react-native-vision-camera-v3-pose-detection' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+  `The native plugin package 'PoseDetection' doesn't seem to be linked. Make sure to rebuild the native code\n`;
+
+const poseOptions : PoseDetectionOptions = {
+  mode: 'stream', // or 'single'
+  performanceMode: 'max', // or 'min'
+};
 
 const plugin: FrameProcessorPlugin | undefined =
-  VisionCameraProxy.initFrameProcessorPlugin('detectPose');
+  VisionCameraProxy.initFrameProcessorPlugin('detectPose', {});
 
-export function detectPose(frame: Frame, options: PoseDetectionOptions): any {
+export function detectPose(frame: Frame): any {
   'worklet';
   if (plugin == null) throw new Error(LINKING_ERROR);
   // @ts-ignore
-  return options ? plugin.call(frame, options) : plugin.call(frame);
+  return plugin.call(frame, poseOptions);
 }
