@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
-import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useFrameProcessor, useSkiaFrameProcessor } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
@@ -29,7 +29,10 @@ const PoseScreen = () => {
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    // Call your native plugin by name
+    // render the video frame
+    //frame.render()
+
+    // Call your native plugin to detect the Pose
     const result = detectPose(frame);
     // Use runOnJS to update state in the React context
     // This is necessary because the frame processor runs on a separate thread
@@ -51,7 +54,6 @@ const PoseScreen = () => {
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
-        videoStabilizationMode="off"
         frameProcessor={frameProcessor}
       />
       <View style={styles.overlay}>
