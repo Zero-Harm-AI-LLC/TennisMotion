@@ -12,8 +12,6 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		C27F4B616F3770EF4BF1166C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		8C1909F9230149ECBBCBD013 /* PoseDectection.m in Sources */ = {isa = PBXBuildFile; fileRef = E01B7262709E4215A9D020BA /* PoseDectection.m */; };
-		00B2D8BA0DD24A37A49D7EB1 /* PoseDectection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD3D2FF033A4E94B8C9D447 /* PoseDectection.swift */; };
 		2121AADD7C5C444EB8FF8873 /* PoseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1611B75AFDFF4E57B8328211 /* PoseDetection.m */; };
 /* End PBXBuildFile section */
 
@@ -28,8 +26,6 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = TennisMotion/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TennisMotion/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		E01B7262709E4215A9D020BA /* PoseDectection.m */ = {isa = PBXFileReference; name = "PoseDectection.m"; path = "PoseDectection.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
-		0CD3D2FF033A4E94B8C9D447 /* PoseDectection.swift */ = {isa = PBXFileReference; name = "PoseDectection.swift"; path = "PoseDectection.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 		1611B75AFDFF4E57B8328211 /* PoseDetection.m */ = {isa = PBXFileReference; name = "PoseDetection.m"; path = "PoseDetection.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
@@ -81,7 +77,6 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
-				D7A723FA61904766882DC521 /* PoseDectection */,
 				5159C505799346B2A51AC28E /* PoseDetection */,
 			);
 			indentWidth = 2;
@@ -104,16 +99,6 @@
 				5709B34CF0A7D63546082F79 /* Pods-TennisMotion.release.xcconfig */,
 			);
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		D7A723FA61904766882DC521 /* PoseDectection */ = {
-			isa = PBXGroup;
-			children = (
-				E01B7262709E4215A9D020BA /* PoseDectection.m */,
-				0CD3D2FF033A4E94B8C9D447 /* PoseDectection.swift */,
-			);
-			name = PoseDectection;
-			path = PoseDectection;
 			sourceTree = "<group>";
 		};
 		5159C505799346B2A51AC28E /* PoseDetection */ = {
@@ -274,8 +259,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
-				8C1909F9230149ECBBCBD013 /* PoseDectection.m in Sources */,
-				00B2D8BA0DD24A37A49D7EB1 /* PoseDectection.swift in Sources */,
 				2121AADD7C5C444EB8FF8873 /* PoseDetection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
