@@ -40,6 +40,9 @@ const PoseScreen = () => {
     // This is necessary because the frame processor runs on a separate thread
     pose.value = result;
     console.log('Pose result:', pose.value);
+    
+    // Use Skia to draw the pose, see https://react-native-vision-camera.com/docs/guides/skia-frame-processors
+
   }, [pose]);
 
   if (!device || !permissionsGranted) {
