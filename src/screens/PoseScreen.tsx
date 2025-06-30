@@ -27,6 +27,9 @@ const PoseScreen = () => {
     })();
   }, []);
 
+  // There might be a black screen
+  // A fix might be: https://github.com/mrousavy/react-native-vision-camera/issues/2951
+  // which needs a patch to the code
   const frameProcessor = useSkiaFrameProcessor((frame) => {
     'worklet';
     // render the video frame
