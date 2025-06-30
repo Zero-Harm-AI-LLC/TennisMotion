@@ -27,10 +27,12 @@ const PoseScreen = () => {
     })();
   }, []);
 
-  const frameProcessor = useFrameProcessor((frame) => {
+  const frameProcessor = useSkiaFrameProcessor((frame) => {
     'worklet';
     // render the video frame
-    //frame.render()
+    console.log('Rendering frame: ', frame.width);
+    console.log('Rendering frame: ', frame.height);
+    frame.render()
 
     // Call your native plugin to detect the Pose
     const result = detectPose(frame);
