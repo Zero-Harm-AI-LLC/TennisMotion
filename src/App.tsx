@@ -15,6 +15,7 @@ import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import VideoScreen from './screens/VideoScreen';
 import VideoPlayer from './screens/VideoPlayer';  
 import ProfileScreen from './screens/ProfileScreen';
+import PoseScreen from './screens/PoseScreen';
 import { VideoProvider } from './context/VideoContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileSetup from './screens/ProfileSetup'
@@ -85,7 +86,7 @@ export default function App() {
           }) as BottomTabNavigationOptions}
         >
           <Tab.Screen name="Stats" component={StatsScreen} />
-          <Tab.Screen name="Sessions" component={SessionsScreen} />
+          <Tab.Screen name="Sessions" component={PoseScreen} />
           <Tab.Screen name="Coaching" component={VideoStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />

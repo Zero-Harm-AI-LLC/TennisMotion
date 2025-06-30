@@ -126,4 +126,7 @@ To learn more about React Native, take a look at the following resources:
 - [Async Storage](https://codezup.com/offline-first-react-native-implementing-asyncstorage-for-robust-apps/) - Offline-First React Native: Implementing AsyncStorage for Robust Apps.
 - [React Native Animations](https://codezup.com/react-native-animations-guide-ui-transitions/) - Build Engaging UI Transitions.
 
+To learn more about AI and Pose detection:
+
+[Blog on pose detection](https://github.com/mrousavy/VisionCameraSkiaDemo)
 ---

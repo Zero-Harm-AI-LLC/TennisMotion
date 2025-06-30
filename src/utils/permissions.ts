@@ -5,10 +5,11 @@ import {
   Platform,
 } from 'react-native';
 import {Camera} from 'react-native-vision-camera';
+import { request, PERMISSIONS } from 'react-native-permissions';
 
 const APP_NAME = 'TennisMotion';
 
-const requestCameraPermission = async (): Promise<
+export const requestCameraPermission = async (): Promise<
   PermissionStatus | 'restricted'
 > => {
   const cameraPermission = await Camera.getCameraPermissionStatus();
@@ -24,6 +25,15 @@ const requestCameraPermission = async (): Promise<
     return newCameraPermission;
   }
   return cameraPermission;
+};
+
+export const requestGalleryPermission = async () => {
+  const result = await request(
+    Platform.OS === 'ios'
+      ? PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY
+      : PERMISSIONS.ANDROID.READ_MEDIA_VIDEO
+  );
+  return result;
 };
 
 const requestAndroidCameraPermission =
@@ -58,4 +68,12 @@ const requestAndroidCameraPermission =
     }
   };
 
-export default requestCameraPermission;
+export const requestMicrophonePermission = async (): Promise<PermissionStatus> => {
+  const micStatus = await Camera.requestMicrophonePermission();
+  if (micStatus !== 'granted') {
+    Alert.alert(
+      'Please go to the settings to enable microphone permission!',
+    );
+  }
+  return micStatus;
+}
