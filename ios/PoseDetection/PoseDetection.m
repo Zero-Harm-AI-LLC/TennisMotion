@@ -1,9 +1,9 @@
 #import <MLKitPoseDetection/MLKitPoseDetection.h>
 #import <MLKitPoseDetectionCommon/MLKitPoseDetectionCommon.h>
-#import <VisionCamera/FrameProcessorPlugin.h>
-#import <VisionCamera/FrameProcessorPluginRegistry.h>
-#import <VisionCamera/VisionCameraProxy.h>
-#import <VisionCamera/Frame.h>
+#import <FrameProcessors/FrameProcessorPlugin.h>
+#import <FrameProcessors/FrameProcessorPluginRegistry.h>
+#import <FrameProcessors/VisionCameraProxy.h>
+#import <FrameProcessors/Frame.h>
 @import MLKitVision;
 
 @interface PoseDetectionPlugin : FrameProcessorPlugin
