@@ -4,6 +4,7 @@ import { Camera, useCameraDevices, useFrameProcessor, useSkiaFrameProcessor } fr
 import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
+import { Skia, PaintStyle } from "@shopify/react-native-skia";
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,7 +36,14 @@ const PoseScreen = () => {
     // render the video frame
     console.log('Rendering frame: ', frame.width);
     console.log('Rendering frame: ', frame.height);
-    frame.render()
+    frame.render();
+
+    const paint = Skia.Paint();
+    paint.setColor(Skia.Color("#FF0000")); // red overlay
+    paint.setStyle(PaintStyle.Fill);
+
+    // Draw a red rectangle on top
+    frame.drawRect({ x: 0, y: 0, width: frame.width, height: frame.height }, paint);
 
     // Call your native plugin to detect the Pose
     const result = detectPose(frame);
