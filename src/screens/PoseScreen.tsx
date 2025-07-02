@@ -46,11 +46,11 @@ const PoseScreen = () => {
     frame.drawRect({ x: 0, y: 0, width: frame.width, height: frame.height }, paint);
 
     // Call your native plugin to detect the Pose
-    const result = detectPose(frame);
     // Use runOnJS to update state in the React context
     // This is necessary because the frame processor runs on a separate thread
-    pose.value = result;
-    console.log('Pose result:', pose.value);
+    // const result = detectPose(frame);
+    // pose.value = result;
+    // console.log('Pose result:', pose.value);
     
     // Use Skia to draw the pose, see https://react-native-vision-camera.com/docs/guides/skia-frame-processors
 

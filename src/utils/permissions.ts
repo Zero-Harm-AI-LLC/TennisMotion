@@ -5,7 +5,7 @@ import {
   Platform,
 } from 'react-native';
 import {Camera} from 'react-native-vision-camera';
-import { request, PERMISSIONS } from 'react-native-permissions';
+import { request, check, RESULTS, PERMISSIONS } from 'react-native-permissions';
 
 const APP_NAME = 'TennisMotion';
 
@@ -28,12 +28,17 @@ export const requestCameraPermission = async (): Promise<
 };
 
 export const requestGalleryPermission = async () => {
-  const result = await request(
+  const permission =
     Platform.OS === 'ios'
       ? PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY
-      : PERMISSIONS.ANDROID.READ_MEDIA_VIDEO
-  );
-  return result;
+      : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+
+  const result = await check(permission);
+  if (result === RESULTS.GRANTED) {
+    return result;
+  }
+
+  return await request(permission);
 };
 
 const requestAndroidCameraPermission =

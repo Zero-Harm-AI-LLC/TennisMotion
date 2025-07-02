@@ -5,7 +5,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+platform :ios, '16.0'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -17,8 +17,6 @@ end
 target 'TennisMotion' do
   config = use_native_modules!
 
-  pod 'GoogleMLKit/PoseDetection', '3.1.0'
-
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
@@ -26,6 +24,11 @@ target 'TennisMotion' do
   )
 
   post_install do |installer|
+    # Exclude x86_64 from simulator builds (Apple Silicon fix)
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'x86_64'
+    end
+
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
