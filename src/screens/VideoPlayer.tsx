@@ -32,11 +32,11 @@ const VideoPlayer = () => {
     (async () => {
       const cameraStatus = await requestCameraPermission();
       const micStatus = await requestMicrophonePermission();
-      const galleryStatus = await requestGalleryPermission();
+      //const galleryStatus = await requestGalleryPermission();
       setPermissionsGranted(
         cameraStatus === 'granted' &&
-        micStatus === 'granted' &&
-        galleryStatus === 'granted'
+        micStatus === 'granted' 
+        // && galleryStatus === 'granted'
       );
     })();
   }, []);
