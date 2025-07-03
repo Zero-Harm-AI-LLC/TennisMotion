@@ -4,7 +4,7 @@ import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision
 import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
-import { Skia, PaintStyle } from "@shopify/react-native-skia";
+import { Canvas, Skia, PaintStyle } from "@shopify/react-native-skia";
 
 const { width, height } = Dimensions.get('window');
 
@@ -57,11 +57,9 @@ const PoseScreen = () => {
         isActive={true}
         frameProcessor={frameProcessor}
       />
-      <View style={styles.overlay}>
-        <Text style={styles.poseText}>
-          {pose.value ? JSON.stringify(pose.value, null, 2) : 'Detecting pose...'}
-        </Text>
-      </View>
+      <Canvas style={{ position: 'absolute', width, height }}>
+        // ... your skia logic
+      </Canvas>
     </View>
   );
 };
