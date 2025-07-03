@@ -1,6 +1,6 @@
 #import <VisionCamera/FrameProcessorPlugin.h>
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
-#import <VisionCamera/VisionCameraProxy.h>
+#import <VisionCamera/VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
 
 @interface PoseDetectionPlugin : FrameProcessorPlugin

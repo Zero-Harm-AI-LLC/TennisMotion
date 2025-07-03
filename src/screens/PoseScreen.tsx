@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
-import { Camera, useCameraDevices, useFrameProcessor, useSkiaFrameProcessor } from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
@@ -31,29 +31,14 @@ const PoseScreen = () => {
   // There might be a black screen
   // A fix might be: https://github.com/mrousavy/react-native-vision-camera/issues/2951
   // which needs a patch to the code
-  const frameProcessor = useSkiaFrameProcessor((frame) => {
+  const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    // render the video frame
-    console.log('Rendering frame: ', frame.width);
-    console.log('Rendering frame: ', frame.height);
-    frame.render();
-
-    const paint = Skia.Paint();
-    paint.setColor(Skia.Color("#FF0000")); // red overlay
-    paint.setStyle(PaintStyle.Fill);
-
-    // Draw a red rectangle on top
-    frame.drawRect({ x: 0, y: 0, width: frame.width, height: frame.height }, paint);
-
     // Call your native plugin to detect the Pose
     // Use runOnJS to update state in the React context
     // This is necessary because the frame processor runs on a separate thread
-    // const result = detectPose(frame);
-    // pose.value = result;
-    // console.log('Pose result:', pose.value);
-    
-    // Use Skia to draw the pose, see https://react-native-vision-camera.com/docs/guides/skia-frame-processors
-
+    const result = detectPose(frame);
+    pose.value = result;
+    console.log('Pose result:', pose.value);
   }, [pose]);
 
   if (!device || !permissionsGranted) {
