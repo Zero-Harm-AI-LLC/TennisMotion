@@ -1,18 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
 import { Canvas, Skia, PaintStyle } from "@shopify/react-native-skia";
+import { useIsFocused } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
 const PoseScreen = () => {
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
   const pose = useSharedValue(null);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const isFocused = useIsFocused();
+
+  // Select 16:9 aspect ratio at 1080p resolution (1920x1080)
+  const desiredWidth = 1920;
+  const desiredHeight = 1080;
+  const desiredFps = 30; // You can set to 60 if your device supports it
+
+  // Use useMemo to optimize format selection
+  const format = useMemo(() => {
+    if (!device?.formats) return undefined;
+    // Find a format that matches 1920x1080 and supports at least 30fps
+    return (
+      device.formats.find(
+        (f) => (
+          f.videoWidth === desiredWidth &&
+          f.videoHeight === desiredHeight &&
+          f.minFps <= desiredFps && desiredFps <= f.maxFps)
+      ) || device.formats[0]
+    );
+  }, [device, desiredWidth, desiredHeight, desiredFps]);
 
   // Request permissions on mount
   useEffect(() => {
@@ -52,9 +74,15 @@ const PoseScreen = () => {
   return (
     <View style={styles.container}>
       <Camera
+        ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={true}
+        isActive={isFocused && permissionsGranted}
+        video={true}
+        audio={true}
+        format={format}
+        fps={desiredFps}
+        onError={(error) => console.error('Camera error:', error)}
         frameProcessor={frameProcessor}
       />
       <Canvas style={{ position: 'absolute', width, height }}>
