@@ -5,6 +5,7 @@
  * @format
  */
 import * as React from 'react';
+import 'react-native-worklets-core';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,6 +20,7 @@ import PoseScreen from './screens/PoseScreen';
 import { VideoProvider } from './context/VideoContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileSetup from './screens/ProfileSetup'
+import PoseDraw from './screens/PoseDraw';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -87,7 +89,7 @@ export default function App() {
         >
           <Tab.Screen name="Stats" component={StatsScreen} />
           <Tab.Screen name="Sessions" component={PoseScreen} />
-          <Tab.Screen name="Coaching" component={VideoStack} />
+          <Tab.Screen name="Coaching" component={PoseDraw} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />
         </Tab.Navigator>
