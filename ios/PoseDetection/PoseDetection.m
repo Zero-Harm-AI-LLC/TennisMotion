@@ -55,7 +55,7 @@
                     MLKPoseLandmark *leftShoulderPosition = [pose landmarkOfType:MLKPoseLandmarkTypeLeftShoulder];
                     if (leftShoulderPosition.inFrameLikelihood > 0.5) {
                         MLKVision3DPoint *position = leftShoulderPosition.position;
-                        data[@"leftShoulderPosition"] = @{@"x": @(position.x), @"y": @(  position.y)};
+                        data[@"leftShoulderPosition"] = @{@"x": @(position.x), @"y": @(position.y)};
                     }
                     MLKPoseLandmark *rightShoulderPosition = [pose landmarkOfType:MLKPoseLandmarkTypeRightShoulder];
                     if (rightShoulderPosition.inFrameLikelihood > 0.5) {

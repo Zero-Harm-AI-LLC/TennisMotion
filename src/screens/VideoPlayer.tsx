@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,6 +11,8 @@ import {
   requestCameraPermission,
   requestMicrophonePermission
 } from '../utils/permissions';
+import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 
 type RootStackParamList = {
   VideoScreen: undefined;
@@ -23,9 +25,29 @@ const VideoPlayer = () => {
   const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
+
+  // Select 16:9 aspect ratio at 1080p resolution (1920x1080)
+  const desiredWidth = 1920;
+  const desiredHeight = 1080;
+  const desiredFps = 30; // You can set to 60 if your device supports it
+
+  const format = useMemo(() => {
+    if (!device?.formats) return undefined;
+    // Find a format that matches 1920x1080 and supports at least 30fps
+    return (
+      device.formats.find(
+        (f) => (
+          f.videoWidth === desiredWidth &&
+          f.videoHeight === desiredHeight &&
+          f.minFps <= desiredFps && desiredFps <= f.maxFps)
+      ) || device.formats[0]
+    );
+  }, [device, desiredWidth, desiredHeight, desiredFps]);
+
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const { addVideo } = useVideoContext();
+  const isFocused = useIsFocused();
 
   // Request permissions on mount
   useEffect(() => {
@@ -90,6 +112,20 @@ const VideoPlayer = () => {
     }
   }, [isRecording]);
 
+  // Hide tab bar when this screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: undefined, // Restore default
+        });
+      };
+    }, [navigation])
+  );
+
   if (!device || !permissionsGranted) {
     return (
       <SafeAreaView style={styles.centered}>
@@ -104,20 +140,20 @@ const VideoPlayer = () => {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={true}
+        isActive={isFocused && permissionsGranted}
         video={true}
         audio={true}
+        format={format}
+        fps={desiredFps}
       />
       <View style={styles.controlsOverlay}>
         {!isRecording ? (
           <TouchableOpacity style={styles.recordButton} onPress={handleStartRecording}>
             <Icon name="record" size={64} color="#ff0000" />
-            <Text style={styles.controlText}>Start Recording</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.stopButton} onPress={handleStopRecording}>
             <Icon name="stop" size={64} color="#ffffff" />
-            <Text style={styles.controlText}>Stop Recording</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -126,7 +162,7 @@ const VideoPlayer = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'black'},
+  container: { flex: 1, backgroundColor: 'white'},
   controlsOverlay: {
     position: 'absolute',
     bottom: 0,

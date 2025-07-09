@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Dimensions, useWindowDimensions } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import Animated, { useSharedValue, runOnJS, useAnimatedStyle} from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
 //import { Canvas, Skia, PaintStyle, Circle, Rect, Line, vec } from "@shopify/react-native-skia";
+import { useIsFocused } from '@react-navigation/native';
 import Svg, {Line, Rect} from 'react-native-svg';
 
 
@@ -60,45 +61,31 @@ const defaultPose = {
 }
 
 const PoseScreen = () => {
-  
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const dim = useWindowDimensions();
-  const pose = useSharedValue(defaultPose);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const pose = useSharedValue(null);
+  const isFocused = useIsFocused();
 
-  const leftWristToElbowPosition = usePosition(pose, 'leftWristPosition', 'leftElbowPosition');
-  const leftElbowToShoulderPosition = usePosition(pose, 'leftElbowPosition', 'leftShoulderPosition');
-  const leftShoulderToHipPosition = usePosition(pose, 'leftShoulderPosition', 'leftHipPosition');
-  const leftHipToKneePosition = usePosition(pose, 'leftHipPosition', 'leftKneePosition');
-  const leftKneeToAnklePosition = usePosition(pose, 'leftKneePosition', 'leftAnklePosition');
-  const leftIndexToThumbPostion = usePosition(pose, 'leftIndexPosition', 'leftThumbPosition');
-  const leftWristToThumbPostion = usePosition(pose, 'leftWristPosition', 'leftThumbPosition');
-  const leftIndexToPinkyPostion = usePosition(pose, 'leftIndexPosition', 'leftPinkyPosition');
-  const leftWristToPinkyPostion = usePosition(pose, 'leftWristPosition', 'leftPinkyPosition');
-  const leftHeelToFootPosition = usePosition(pose, 'leftHeelPosition', 'leftFootIndexPosition');
-  const leftHeelToAnklePosition = usePosition(pose, 'leftHeelPosition', 'leftAnklePosition');
-  const leftEyeInnerToEyePosition = usePosition(pose, 'leftEyeInnerPosition', 'leftEyePosition');
-  const leftEyeOuterToEyePosition = usePosition(pose, 'leftEyeOuterPosition', 'leftEyePosition');
+  // Select 16:9 aspect ratio at 1080p resolution (1920x1080)
+  const desiredWidth = 1920;
+  const desiredHeight = 1080;
+  const desiredFps = 30; // You can set to 60 if your device supports it
 
-  const rightWristToElbowPosition = usePosition(pose, 'rightWristPosition', 'rightElbowPosition');
-  const rightElbowToShoulderPosition = usePosition(pose, 'rightElbowPosition', 'rightShoulderPosition');
-  const rightShoulderToHipPosition = usePosition(pose, 'rightShoulderPosition', 'rightHipPosition');
-  const rightHipToKneePosition = usePosition(pose, 'rightHipPosition', 'rightKneePosition');
-  const rightKneeToAnklePosition = usePosition(pose, 'rightKneePosition', 'rightAnklePosition');
-  const rightIndexToThumbPostion = usePosition(pose, 'rightIndexPosition', 'rightThumbPosition');
-  const rightWristToThumbPostion = usePosition(pose, 'rightWristPosition', 'rightThumbPosition');
-  const rightIndexToPinkyPostion = usePosition(pose, 'rightIndexPosition', 'rightPinkyPosition');
-  const rightWristToPinkyPostion = usePosition(pose, 'rightWristPosition', 'rightPinkyPosition');
-  const rightHeelToFootPosition = usePosition(pose, 'rightHeelPosition', 'rightFootIndexPosition');
-  const rightHeelToAnklePosition = usePosition(pose, 'rightHeelPosition', 'rightAnklePosition');
-  const rightEyeInnerToEyePosition = usePosition(pose, 'rightEyeInnerPosition', 'rightEyePosition');
-  const rightEyeOuterToEyePosition = usePosition(pose, 'rightEyeOuterPosition', 'rightEyePosition');
-
-  const shoulderToShoulderPosition = usePosition(pose, 'leftShoulderPosition', 'rightShoulderPosition');
-  const hipToHipPosition = usePosition(pose, 'leftHipPosition', 'rightHipPosition');
-  const mouthPosition = usePosition(pose, 'leftMouthPosition', 'rightMouthPosition');
-  
+  // Use useMemo to optimize format selection
+  const format = useMemo(() => {
+    if (!device?.formats) return undefined;
+    // Find a format that matches 1920x1080 and supports at least 30fps
+    return (
+      device.formats.find(
+        (f) => (
+          f.videoWidth === desiredWidth &&
+          f.videoHeight === desiredHeight &&
+          f.minFps <= desiredFps && desiredFps <= f.maxFps)
+      ) || device.formats[0]
+    );
+  }, [device, desiredWidth, desiredHeight, desiredFps]);
 
   // Request permissions on mount
   useEffect(() => {
@@ -233,9 +220,15 @@ const PoseScreen = () => {
   return (
     <View style={styles.container}>
       <Camera
+        ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={true}
+        isActive={isFocused && permissionsGranted}
+        video={true}
+        audio={true}
+        format={format}
+        fps={desiredFps}
+        onError={(error) => console.error('Camera error:', error)}
         frameProcessor={frameProcessor}
       />
       <Svg
