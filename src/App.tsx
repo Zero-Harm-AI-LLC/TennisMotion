@@ -24,7 +24,7 @@ import PoseDraw from './screens/PoseDraw';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-const isProfileSetupNeeded = AsyncStorage.getItem("Name") === null;
+
 
 // Splash Screen
 function SplashScreen() {
@@ -61,10 +61,16 @@ const VideoStack = () => (
 
 export default function App() {
   const [loading, setLoading] = React.useState(true);
+  const [isProfileSetupNeeded, setIsProfileSetupNeeded] = React.useState<boolean | null>(null);
+
   React.useEffect(() => {
-    setTimeout(() => setLoading(false), 1500);
+    AsyncStorage.getItem("Name").then(value => {
+      setIsProfileSetupNeeded(value === null);
+      setLoading(false);
+    });
   }, []);
-  if (loading) return <SplashScreen />;
+
+  if (loading || isProfileSetupNeeded === null) return <SplashScreen />;
   return (
     <VideoProvider>
       <NavigationContainer>
@@ -93,11 +99,9 @@ export default function App() {
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />
         </Tab.Navigator>
-        <View>
-          {isProfileSetupNeeded ? (
-            <ProfileSetup />
-          ) : null}
-        </View>
+        {isProfileSetupNeeded ? (
+          <ProfileSetup />
+        ) : null }
       </NavigationContainer>
     </VideoProvider>
   );
