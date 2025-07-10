@@ -68,6 +68,10 @@ const PoseDraw = () => {
     'worklet';
     const poseObject = detectPose(frame);
 
+    // turn 90 degrees clockwise
+    // This is necessary because the camera frame is rotated 90 degrees clockwise
+    // and we need to adjust the coordinates accordingly.
+    // The frame width and height are swapped in the poseObject.
     const yFactor = dimensions.width / frame.height;
     const xFactor = dimensions.height / frame.width;
     /*
