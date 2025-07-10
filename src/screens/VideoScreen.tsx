@@ -16,12 +16,12 @@ const VideoScreen = () => {
   
   const { videos } = useVideoContext();
 
-  const handleRecord = () => {
+  const handleAnalyze = () => {
     navigation.navigate('VideoPlayer');
   };
 
-  const handleAnalyze = () => {
-    Alert.alert('Analyze', 'This feature is not implemented yet.');
+  const changeStrokeType = () => {
+    Alert.alert('Analyze', 'Display a list of stroke types such as Forehand, backhand, ..etc.');
   };  
 
   const renderVideoItem = ({ item }: { item: VideoItem }) => (
@@ -48,13 +48,13 @@ const VideoScreen = () => {
         showsHorizontalScrollIndicator={false}
       />
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={handleRecord}>
-          <Icon name="video-plus" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Record</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleAnalyze}>
-          <Icon name="chart-bar" size={24} color="#fff" />
+          <Icon name="video-plus" size={24} color="#fff" />
           <Text style={styles.buttonText}>Analyze</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={changeStrokeType}>
+          <Icon name="chart-bar" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Stroke Type</Text>
         </TouchableOpacity>
       </View>
     </View>
