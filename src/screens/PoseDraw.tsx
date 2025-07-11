@@ -68,10 +68,21 @@ const PoseDraw = () => {
     'worklet';
     const poseObject = detectPose(frame);
 
-    const xFactor = dimensions.width / frame.width;
-    const yFactor = dimensions.height / frame.height;
-
+    // turn 90 degrees clockwise
+    // This is necessary because the camera frame is rotated 90 degrees clockwise
+    // and we need to adjust the coordinates accordingly.
+    // The frame width and height are swapped in the poseObject.
+    const yFactor = dimensions.width / frame.height;
+    const xFactor = dimensions.height / frame.width;
     /*
+      On iOS and Android, front camera preview is usually mirrored by default.
+      But ML models (like Google MLKit) return non-mirrored image coordinates.
+      So, when you draw keypoints or overlays (e.g., using Skia, Canvas, or SVG) on 
+      top of the preview, the drawing doesn't match unless you correct for the mirroring.
+      To fix this, you can apply a horizontal flip to the coordinates of the keypoints.
+      */
+    const flipHorizontal = (x: number) => dimensions.width - x;
+    // Log frame and dimensions for debugging
     console.log('Frame dimensions:', frame.width, frame.height);
     console.log('Screen dimensions:', dimensions.width, dimensions.height);
     console.log('X factor:', xFactor, 'Y factor:', yFactor);
@@ -82,13 +93,11 @@ const PoseDraw = () => {
 
     Object.keys(poseCopy).forEach((key) => {
       const point = poseObject[key];
-      //console.log('Pose key:', key, 'Point:', point);
       if (point) {
-        poseCopy[key as keyof PoseType] = {
-          x: point.x * xFactor,
-          y: point.y * yFactor,
+         poseCopy[key as keyof PoseType] = {
+          x: flipHorizontal(point.y * xFactor),
+          y: point.x * yFactor,
         };
-        console.log('Pose copy for key:', key, " point: ", point);
       }
     });
 
@@ -132,9 +141,6 @@ const PoseDraw = () => {
         width={dimensions.width}
         style={styles.linesContainer}
       >
-        {/* Test Line to confirm drawing works */}
-        <Line x1="50" y1="50" x2="200" y2="200" stroke="lime" strokeWidth="2" />
-
         {/* LEFT SIDE */}
         <Line
           x1={pose.leftWristPosition.x}
