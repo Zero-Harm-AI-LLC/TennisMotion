@@ -1,27 +1,58 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo, useCallback} from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, useWindowDimensions } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
-import Animated, { useSharedValue, runOnJS, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, { useSharedValue, runOnJS, useAnimatedStyle, useAnimatedProps} from 'react-native-reanimated';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { detectPose } from '../utils/detectPose'; 
 //import { Canvas, Skia, PaintStyle, Circle, Rect, Line, vec } from "@shopify/react-native-skia";
 import { useIsFocused } from '@react-navigation/native';
 import Svg, {Line, Rect} from 'react-native-svg';
-
+import { PoseType } from '../utils/types';
+import { Worklets } from 'react-native-worklets-core';
 
 //const { width, height } = Dimensions.get('window');
 
+const AnimatedLine = Animated.createAnimatedComponent(Line);
 
-const usePosition = (pose, valueName1, valueName2) => {
-  return useAnimatedStyle(
-    () => ({
-      x1: pose.value[valueName1]["x"],
-      y1: pose.value[valueName1]["y"],
-      x2: pose.value[valueName2]["x"],
-      y2: pose.value[valueName2]["y"],
-    }),
-    [pose],
-  );
+const usePosition = (p1, p2) => {
+  if (p1 && p2) {
+    return ( 
+      useAnimatedProps(() => ({
+        x1: p1.x,
+        y1: p1.y,
+        x2: p2.x,
+        y2: p2.y,
+      }))
+    );
+  }
+  else {
+    return (
+      useAnimatedProps(() => ({
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0,
+      }))
+    );
+  }
+
+  /*
+  const position = {
+    x1: useSharedValue(0),
+    y1: useSharedValue(0),
+    x2: useSharedValue(0),
+    y2: useSharedValue(0),
+  };
+
+  if (p1 && p2) {
+    position.x1.value = p1.x;
+    position.y1.value = p1.y;
+    position.x2.value = p2.x;
+    position.y2.value = p2.y;
+}
+
+  return position;
+  */
 };
 
 const defaultPose = {
@@ -65,8 +96,46 @@ const PoseScreen = () => {
   const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const pose = useSharedValue(null);
+  const [pose, setPose] = useState<PoseType>(defaultPose);
   const isFocused = useIsFocused();
+  const dimensions = useWindowDimensions();
+  let i = 0;
+
+  
+  //const something = useSharedValue(usePosition(pose.leftAnklePosition, pose.leftEarPosition))
+  
+  const leftWristToElbowPosition = usePosition(pose.leftWristPosition, pose.leftElbowPosition);
+  const leftElbowToShoulderPosition = usePosition(pose.leftElbowPosition, pose.leftShoulderPosition);
+  const leftShoulderToHipPosition = usePosition(pose.leftShoulderPosition, pose.leftHipPosition);
+  const leftHipToKneePosition = usePosition(pose.leftHipPosition, pose.leftKneePosition);
+  const leftKneeToAnklePosition = usePosition(pose.leftKneePosition, pose.leftAnklePosition);
+  const leftIndexToThumbPostion = usePosition(pose.leftIndexPosition, pose.leftThumbPosition);
+  const leftWristToThumbPostion = usePosition(pose.leftWristPosition, pose.leftThumbPosition);
+  const leftIndexToPinkyPostion = usePosition(pose.leftIndexPosition, pose.leftPinkyPosition);
+  const leftWristToPinkyPostion = usePosition(pose.leftWristPosition, pose.leftPinkyPosition);
+  const leftHeelToFootPosition = usePosition(pose.leftHeelPosition, pose.leftFootIndexPosition);
+  const leftHeelToAnklePosition = usePosition(pose.leftHeelPosition, pose.leftAnklePosition);
+  const leftEyeInnerToEyePosition = usePosition(pose.leftEyeInnerPosition, pose.leftEyePosition);
+  const leftEyeOuterToEyePosition = usePosition(pose.leftEyeOuterPosition, pose.leftEyePosition);
+
+  const rightWristToElbowPosition = usePosition(pose.rightWristPosition, pose.rightElbowPosition);
+  const rightElbowToShoulderPosition = usePosition(pose.rightElbowPosition, pose.rightShoulderPosition);
+  const rightShoulderToHipPosition = usePosition(pose.rightShoulderPosition, pose.rightHipPosition);
+  const rightHipToKneePosition = usePosition(pose.rightHipPosition, pose.rightKneePosition);
+  const rightKneeToAnklePosition = usePosition(pose.rightKneePosition, pose.rightAnklePosition);
+  const rightIndexToThumbPostion = usePosition(pose.rightIndexPosition, pose.rightThumbPosition);
+  const rightWristToThumbPostion = usePosition(pose.rightWristPosition, pose.rightThumbPosition);
+  const rightIndexToPinkyPostion = usePosition(pose.rightIndexPosition, pose.rightPinkyPosition);
+  const rightWristToPinkyPostion = usePosition(pose.rightWristPosition, pose.rightPinkyPosition);
+  const rightHeelToFootPosition = usePosition(pose.rightHeelPosition, pose.rightFootIndexPosition);
+  const rightHeelToAnklePosition = usePosition(pose.rightHeelPosition, pose.rightAnklePosition);
+  const rightEyeInnerToEyePosition = usePosition(pose.rightEyeInnerPosition, pose.rightEyePosition);
+  const rightEyeOuterToEyePosition = usePosition(pose.rightEyeOuterPosition, pose.rightEyePosition);
+
+  const shoulderToShoulderPosition = usePosition(pose.leftShoulderPosition, pose.rightShoulderPosition);
+  const hipToHipPosition = usePosition(pose.leftHipPosition, pose.rightHipPosition);
+  const mouthPosition = usePosition(pose.leftMouthPosition, pose.rightMouthPosition);
+  
 
   // Select 16:9 aspect ratio at 1080p resolution (1920x1080)
   const desiredWidth = 1920;
@@ -87,6 +156,14 @@ const PoseScreen = () => {
     );
   }, [device, desiredWidth, desiredHeight, desiredFps]);
 
+  const handlePose = useCallback((result: any) => {
+    // This runs on the JS thread.
+    console.log('Pose:', result);
+    // You can call setState, navigation, etc. here
+    setPose(result);
+  }, []);
+  const sendToJS = Worklets.createRunOnJS(handlePose);
+
   // Request permissions on mount
   useEffect(() => {
     (async () => {
@@ -106,95 +183,36 @@ const PoseScreen = () => {
   // which needs a patch to the code
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    // Call your native plugin to detect the Pose
-    // Use runOnJS to update state in the React context
-    // This is necessary because the frame processor runs on a separate thread
-    const result = detectPose(frame);
+    i++;
+    const poseObject = detectPose(frame);
+    const xFactor = dimensions.height / frame.width;
+    const yFactor = dimensions.width / frame.height;
 
-    const xFactor = dim.width / frame.width;
-    const yFactor = dim.height / frame.height;
+    
+    console.log('Frame dimensions:', frame.width, frame.height);
+    console.log('Screen dimensions:', dimensions.width, dimensions.height);
+    console.log('X factor:', xFactor, 'Y factor:', yFactor);
+    
+  
+    const poseCopy : PoseType = { ...defaultPose };
+    console.log('Pose object:', poseObject);
 
-    const poseCopy = {
-      leftShoulderPosition: {x: 0, y: 0},
-      rightShoulderPosition: {x: 0, y: 0},
-      leftElbowPosition: {x: 0, y: 0},
-      rightElbowPosition: {x: 0, y: 0},
-      leftWristPosition: {x: 0, y: 0},
-      rightWristPosition: {x: 0, y: 0},
-      leftHipPosition: {x: 0, y: 0},
-      rightHipPosition: {x: 0, y: 0},
-      leftKneePosition: {x: 0, y: 0},
-      rightKneePosition: {x: 0, y: 0},
-      leftAnklePosition: {x: 0, y: 0},
-      rightAnklePosition: {x: 0, y: 0},
-      leftPinkyPosition: {x: 0, y: 0},
-      rightPinkyPosition: {x: 0, y: 0},
-      leftIndexPosition: {x: 0, y: 0},
-      rightIndexPosition: {x: 0, y: 0},
-      leftThumbPosition: {x: 0, y: 0},
-      rightThumbPosition: {x: 0, y: 0},
-      leftHeelPosition: {x: 0, y: 0},
-      rightHeelPosition: {x: 0, y: 0},
-      nosePosition: {x: 0, y: 0},
-      leftFootIndexPosition: {x: 0, y: 0},
-      rightFootIndexPosition: {x: 0, y: 0},
-      leftEyeInnerPosition: {x: 0, y: 0},
-      rightEyeInnerPosition: {x: 0, y: 0},
-      leftEyePosition: {x: 0, y: 0},
-      rightEyePosition: {x: 0, y: 0},
-      leftEyeOuterPosition: {x: 0, y: 0},
-      rightEyeOuterPosition: {x: 0, y: 0},
-      leftEarPosition: {x: 0, y: 0},
-      rightEarPosition: {x: 0, y: 0},
-      leftMouthPosition: {x: 0, y: 0},
-      rightMouthPosition: {x: 0, y: 0},
-    }
-
-    Object.keys(result).forEach(v => {
-      poseCopy[v] = {
-        x: result[v]["x"] * xFactor,
-        y: result[v]["y"] * yFactor,
-      };
+    Object.keys(poseCopy).forEach((key) => {
+      const point = poseObject[key];
+      //console.log('Pose key:', key, 'Point:', point);
+      if (point) {
+        poseCopy[key as keyof PoseType] = {
+          y: point.x * yFactor,
+          x: dimensions.width - (point.y * xFactor),
+        };
+        console.log('Pose copy for key:', key, " point: ", point);
+      }
     });
+  
+    console.log('Pose copy:',  poseCopy);
+    sendToJS(poseCopy); // Calls JS safely
+  }, [sendToJS]);
 
-    // console.log("Width:", frame.width, "Height", frame.height);
-    pose.value = poseCopy;
-    console.log('Pose result:', pose);
-    /*
-    if (pose.value != null) {
-      var thumbPos = pose.value["rightThumbPosition"];
-      var wristPos = pose.value["rightWristPosition"];
-      console.log('Thumb Pos:', pose.value["rightThumbPosition"]);
-      if (pose.value["rightThumbPosition"] != null) {
-        console.log("Thumb x position:", pose.value["rightThumbPosition"]["x"]);
-      }
-      console.log('Wrist Pos:', pose.value["rightWristPosition"]);
-      if (pose.value["rightWristPosition"] != null) {
-        console.log("Wrist y position:", pose.value["rightWristPosition"]["y"]);
-      }
-    }
-    //line = drawLine("rightThumbPosition", "rightWristPosition");
-    */
-  }, [pose]);
-
-  /*
-  const drawLine = (point1: string, point2: string) => {
-    console.log("Line Draw");
-    if (pose.value != null && pose.value[point1] != null && pose.value[point2] != null) {
-      return (
-        <Line
-          p1={vec(pose.value[point1]["x"], pose.value[point1]["y"])}
-          p2={vec(pose.value[point2]["x"], pose.value[point2]["y"])}
-          color="red"
-          strokeWidth={4}
-        />
-      );
-    }
-    else {
-      return null;
-    }
-  }
-    */
   
 
 
@@ -206,17 +224,26 @@ const PoseScreen = () => {
     );
   }
 
-  const print = () => {
-    console.log("hello");
-    return (
-      <View>
-      </View>
-    );
+  
+  function DrawLine({p1, p2}) {
+    if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0)) {
+      return null;
+    }
+    else {
+      return (
+        <View>
+          <Line 
+          x1={p1.x} 
+          y1={p1.y} 
+          x2={p2.x} 
+          y2={p2.y} 
+          stroke="lime" 
+          strokeWidth="2" />
+        </View>
+      )
+    }
   }
-
-  //const size = useSharedValue({ width: width, height: height });
-
-  const AnimatedLine = Animated.createAnimatedComponent(Line);
+  
   return (
     <View style={styles.container}>
       <Camera
@@ -232,10 +259,48 @@ const PoseScreen = () => {
         frameProcessor={frameProcessor}
       />
       <Svg
-        height={Dimensions.get('window').height}
-        width={Dimensions.get('window').width}
-        style={styles.linesContainer}>
-        <Rect x="15" y="15" width="70" height="70" stroke="red" strokeWidth="2" fill="yellow" />
+        height={dimensions.height}
+        width={dimensions.width}
+        style={styles.linesContainer}
+      >
+        {/*
+        <AnimatedLine animatedProps={leftWristToElbowPosition} stroke="red" strokeWidth="2"/>
+        <AnimatedLine style={leftWristToElbowPosition} stroke="red" strokeWidth="2"/>
+        <AnimatedLine />
+        <DrawLine p1={pose.leftWristPosition} p2={pose.leftElbowPosition}/>
+        <DrawLine p1={pose.leftElbowPosition} p2={pose.leftShoulderPosition}/>
+        <DrawLine p1={pose.leftShoulderPosition} p2={pose.leftHipPosition}/>
+        <DrawLine p1={pose.leftHipPosition} p2={pose.leftKneePosition}/>
+        <DrawLine p1={pose.leftKneePosition} p2={pose.leftAnklePosition}/>
+        <DrawLine p1={pose.rightWristPosition} p2={pose.rightElbowPosition}/>
+        <DrawLine p1={pose.rightElbowPosition} p2={pose.rightShoulderPosition}/>
+        <DrawLine p1={pose.rightShoulderPosition} p2={pose.rightHipPosition}/>
+        <DrawLine p1={pose.rightHipPosition} p2={pose.rightKneePosition}/>
+        <DrawLine p1={pose.rightKneePosition} p2={pose.rightAnklePosition}/>
+
+        <DrawLine p1={pose.leftShoulderPosition} p2={pose.rightShoulderPosition}/>
+        <DrawLine p1={pose.leftHipPosition} p2={pose.rightHipPosition}/>
+
+        <DrawLine p1={pose.leftIndexPosition} p2={pose.leftThumbPosition}/>
+        <DrawLine p1={pose.leftIndexPosition} p2={pose.leftPinkyPosition}/>
+        <DrawLine p1={pose.leftWristPosition} p2={pose.leftPinkyPosition}/>
+        <DrawLine p1={pose.leftWristPosition} p2={pose.leftThumbPosition}/>
+
+        <DrawLine p1={pose.rightIndexPosition} p2={pose.rightThumbPosition}/>
+        <DrawLine p1={pose.rightIndexPosition} p2={pose.rightPinkyPosition}/>
+        <DrawLine p1={pose.rightWristPosition} p2={pose.rightPinkyPosition}/>
+        <DrawLine p1={pose.rightWristPosition} p2={pose.rightThumbPosition}/>
+
+        <DrawLine p1={pose.leftHeelPosition} p2={pose.leftAnklePosition}/>
+        <DrawLine p1={pose.leftHeelPosition} p2={pose.leftFootIndexPosition}/>
+        <DrawLine p1={pose.rightHeelPosition} p2={pose.rightAnklePosition}/>
+        <DrawLine p1={pose.rightHeelPosition} p2={pose.rightFootIndexPosition}/>
+        <DrawLine p1={pose.leftEyeInnerPosition} p2={pose.leftEyePosition}/>
+        <DrawLine p1={pose.leftEyePosition} p2={pose.leftEyeOuterPosition}/>
+        <DrawLine p1={pose.rightEyeInnerPosition} p2={pose.rightEyePosition}/>
+        <DrawLine p1={pose.rightEyeOuterPosition} p2={pose.rightEyePosition}/>
+        <DrawLine p1={pose.leftMouthPosition} p2={pose.rightMouthPosition}/>
+        */}
         <AnimatedLine animatedProps={leftWristToElbowPosition} stroke="red" strokeWidth="2" />
         <AnimatedLine animatedProps={leftElbowToShoulderPosition} stroke="red" strokeWidth="2" />
         <AnimatedLine animatedProps={leftShoulderToHipPosition} stroke="red" strokeWidth="2" />
@@ -266,65 +331,8 @@ const PoseScreen = () => {
         <AnimatedLine animatedProps={leftEyeOuterToEyePosition} stroke="red" strokeWidth="2" />
         <AnimatedLine animatedProps={rightEyeInnerToEyePosition} stroke="red" strokeWidth="2" />
         <AnimatedLine animatedProps={rightEyeOuterToEyePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={mouthPosition} stroke="red" strokeWidth="2" />
       </Svg>
-      {/*
-      <Canvas style={{ flex: 1, position: 'absolute', width: 1920, height: 1080 }}>
-        <Circle cx={10} cy={10} r={20} color="red" />
-        <Rect x={0} y={0} width={i+100} height={i+100} color="lightblue" />
-        {line}
-        {print()}
-        {(pose.value != null ) ? (//&& pose.value["rightThumbPosition"] != null && pose.value["rightWristPosition"] != null) ? (
-          <View>
-            <Line
-            p1={vec(0, 0)}
-            p2={vec(256, 256)}
-            color="lightblue"
-            style="stroke"
-            strokeWidth={4}
-          />
-          <Rect x={0} y={0} width={200} height={200} color="lightblue" />
-          </View>
-        
-          
-          <Line
-            p1={vec(pose.value["rightThumbPosition"]["x"], pose.value["rightThumbPosition"]["y"])}
-            p2={vec(pose.value["rightWristPosition"]["x"], pose.value["rightWristPosition"]["y"])}
-            color="red"
-            strokeWidth={4}
-          />
-          
-        ) : null }
-        */}
-      
-        {/*drawLine("rightThumbPosition", "rightWristPosition")*/}
-        {/*
-        <Rect
-          x={0}
-          y={0}
-          width={width / 10}
-          height={height / 10}
-          color="rgba(0, 0, 0, 0.15)"
-        /> 
-        {pose.value != null && 
-        pose.value["rightThumbPosition"] != null && 
-        pose.value["rightWristPosition"] != null ? (
-          <Line
-            p1={vec(pose.value["rightThumbPosition"]["x"], pose.value["rightThumbPosition"]["y"])}
-            p2={vec(pose.value["rightWristPosition"]["x"], pose.value["rightWristPosition"]["y"])}
-            color="red"
-            strokeWidth={4}
-          />
-        ) : null }
-
-        {print()}
-        {pose.value &&
-          pose.value["rightThumbPosition"] &&
-          pose.value["rightWristPosition"] ? (
-          drawLine(pose.value["rightThumbPosition"], pose.value["rightWristPosition"])
-        ) : null}
-         
-      </Canvas>
-      */}
     </View>
   );
 };

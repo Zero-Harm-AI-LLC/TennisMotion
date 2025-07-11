@@ -71,16 +71,18 @@ const PoseDraw = () => {
     const xFactor = dimensions.width / frame.width;
     const yFactor = dimensions.height / frame.height;
 
+    /*
     console.log('Frame dimensions:', frame.width, frame.height);
     console.log('Screen dimensions:', dimensions.width, dimensions.height);
     console.log('X factor:', xFactor, 'Y factor:', yFactor);
+    */
 
     const poseCopy : PoseType = { ...defaultPose };
     console.log('Pose object:', poseObject);
 
     Object.keys(poseCopy).forEach((key) => {
       const point = poseObject[key];
-      console.log('Pose key:', key, 'Point:', point);
+      //console.log('Pose key:', key, 'Point:', point);
       if (point) {
         poseCopy[key as keyof PoseType] = {
           x: point.x * xFactor,
