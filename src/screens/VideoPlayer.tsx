@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert, Modal, TextInput, useWindowDimensions} from 'react-native';
-import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert, Dimensions, Modal, TextInput, useWindowDimensions} from 'react-native';
+import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { useNavigation } from '@react-navigation/native';
@@ -11,11 +11,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useVideoContext } from '../context/VideoContext';
-import { useAnimatedProps } from 'react-native-reanimated';
-import Animated from 'react-native-reanimated/lib/typescript/Animated';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import Svg, {Line} from 'react-native-svg';
 import { PoseType } from '../utils/types';
 import { Worklets } from 'react-native-worklets-core';
+import { detectPose } from '../utils/detectPose'; 
 
 type RootStackParamList = {
   VideoScreen: undefined;
@@ -119,6 +119,39 @@ const VideoPlayer = () => {
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
 
+  // pose positions
+  const leftWristToElbowPosition = usePosition(pose.leftWristPosition, pose.leftElbowPosition);
+  const leftElbowToShoulderPosition = usePosition(pose.leftElbowPosition, pose.leftShoulderPosition);
+  const leftShoulderToHipPosition = usePosition(pose.leftShoulderPosition, pose.leftHipPosition);
+  const leftHipToKneePosition = usePosition(pose.leftHipPosition, pose.leftKneePosition);
+  const leftKneeToAnklePosition = usePosition(pose.leftKneePosition, pose.leftAnklePosition);
+  const leftIndexToThumbPostion = usePosition(pose.leftIndexPosition, pose.leftThumbPosition);
+  const leftWristToThumbPostion = usePosition(pose.leftWristPosition, pose.leftThumbPosition);
+  const leftIndexToPinkyPostion = usePosition(pose.leftIndexPosition, pose.leftPinkyPosition);
+  const leftWristToPinkyPostion = usePosition(pose.leftWristPosition, pose.leftPinkyPosition);
+  const leftHeelToFootPosition = usePosition(pose.leftHeelPosition, pose.leftFootIndexPosition);
+  const leftHeelToAnklePosition = usePosition(pose.leftHeelPosition, pose.leftAnklePosition);
+  const leftEyeInnerToEyePosition = usePosition(pose.leftEyeInnerPosition, pose.leftEyePosition);
+  const leftEyeOuterToEyePosition = usePosition(pose.leftEyeOuterPosition, pose.leftEyePosition);
+
+  const rightWristToElbowPosition = usePosition(pose.rightWristPosition, pose.rightElbowPosition);
+  const rightElbowToShoulderPosition = usePosition(pose.rightElbowPosition, pose.rightShoulderPosition);
+  const rightShoulderToHipPosition = usePosition(pose.rightShoulderPosition, pose.rightHipPosition);
+  const rightHipToKneePosition = usePosition(pose.rightHipPosition, pose.rightKneePosition);
+  const rightKneeToAnklePosition = usePosition(pose.rightKneePosition, pose.rightAnklePosition);
+  const rightIndexToThumbPostion = usePosition(pose.rightIndexPosition, pose.rightThumbPosition);
+  const rightWristToThumbPostion = usePosition(pose.rightWristPosition, pose.rightThumbPosition);
+  const rightIndexToPinkyPostion = usePosition(pose.rightIndexPosition, pose.rightPinkyPosition);
+  const rightWristToPinkyPostion = usePosition(pose.rightWristPosition, pose.rightPinkyPosition);
+  const rightHeelToFootPosition = usePosition(pose.rightHeelPosition, pose.rightFootIndexPosition);
+  const rightHeelToAnklePosition = usePosition(pose.rightHeelPosition, pose.rightAnklePosition);
+  const rightEyeInnerToEyePosition = usePosition(pose.rightEyeInnerPosition, pose.rightEyePosition);
+  const rightEyeOuterToEyePosition = usePosition(pose.rightEyeOuterPosition, pose.rightEyePosition);
+
+  const shoulderToShoulderPosition = usePosition(pose.leftShoulderPosition, pose.rightShoulderPosition);
+  const hipToHipPosition = usePosition(pose.leftHipPosition, pose.rightHipPosition);
+  const mouthPosition = usePosition(pose.leftMouthPosition, pose.rightMouthPosition);
+
   // Request permissions on mount
   useEffect(() => {
     (async () => {
@@ -176,6 +209,54 @@ const VideoPlayer = () => {
       navigation.navigate('VideoScreen');
     }
   };
+
+  const handlePose = useCallback((result: any) => {
+    // This runs on the JS thread.
+    console.log('Pose:', result);
+    // You can call setState, navigation, etc. here
+    setPose(result);
+  }, []);
+  const sendToJS = Worklets.createRunOnJS(handlePose);
+
+  const frameProcessor = useFrameProcessor((frame) => {
+      'worklet';
+      const poseObject = detectPose(frame);
+      const xFactor = dimensions.height / frame.width;
+      const yFactor = dimensions.width / frame.height;
+  
+      //console.log('Frame dimensions:', frame.width, frame.height);
+      //console.log('Screen dimensions:', dimensions.width, dimensions.height);
+      //console.log('X factor:', xFactor, 'Y factor:', yFactor);
+       
+      const poseCopy : PoseType = { ...defaultPose };
+      console.log('Pose object:', poseObject);
+      if (isRecording) {
+        Object.keys(poseCopy).forEach((key) => {
+          const point = poseObject[key];
+          //console.log('Pose key:', key, 'Point:', point);
+          if (point) {
+            poseCopy[key as keyof PoseType] = {
+              y: point.x * yFactor,
+              x: dimensions.width - (point.y * xFactor),
+            };
+            console.log('Pose copy for key:', key, " point: ", point);
+          }
+        });
+      
+        console.log('Pose copy:',  poseCopy);
+        sendToJS(poseCopy); // Calls JS safely
+      } else {
+        Object.keys(poseCopy).forEach((key) => {
+          poseCopy[key as keyof PoseType] = {
+            y: 0,
+            x: 0,
+          };
+        });     
+        console.log('Pose copy:',  poseCopy);
+        sendToJS(poseCopy); // Calls JS safely
+      }
+    }, [sendToJS]);
+  
 
   // Handle start recording
   const handleStartRecording = useCallback(async () => {
@@ -257,7 +338,46 @@ const VideoPlayer = () => {
         audio={true}
         format={format}
         fps={desiredFps}
+        onError={(error) => console.error('Camera error:', error)}
+        frameProcessor={frameProcessor}
       />
+      <Svg
+        height={dimensions.height}
+        width={dimensions.width}
+        style={styles.linesContainer}
+      >
+        <AnimatedLine animatedProps={leftWristToElbowPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftElbowToShoulderPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftShoulderToHipPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftHipToKneePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftKneeToAnklePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightWristToElbowPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightElbowToShoulderPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightShoulderToHipPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightHipToKneePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightKneeToAnklePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={shoulderToShoulderPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={hipToHipPosition} stroke="red" strokeWidth="2" />
+
+        <AnimatedLine animatedProps={leftIndexToThumbPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftIndexToPinkyPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftWristToPinkyPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftWristToThumbPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightIndexToThumbPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightIndexToPinkyPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightWristToPinkyPostion} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightWristToThumbPostion} stroke="red" strokeWidth="2" />
+
+        <AnimatedLine animatedProps={leftHeelToAnklePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftHeelToFootPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightHeelToAnklePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightHeelToFootPosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftEyeInnerToEyePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={leftEyeOuterToEyePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightEyeInnerToEyePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={rightEyeOuterToEyePosition} stroke="red" strokeWidth="2" />
+        <AnimatedLine animatedProps={mouthPosition} stroke="red" strokeWidth="2" />
+      </Svg>
       <View style={styles.controlsOverlay}>
         {!isRecording ? (
           <TouchableOpacity style={styles.recordButton} onPress={handleStartRecording}>
@@ -341,7 +461,14 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     width: 75,
     alignSelf: 'center',
-  }
+  },
+  linesContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
+  },
 });
 
 export default VideoPlayer;
