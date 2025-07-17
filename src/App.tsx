@@ -95,7 +95,7 @@ export default function App() {
         >
           <Tab.Screen name="Stats" component={StatsScreen} />
           <Tab.Screen name="Sessions" component={PoseScreen} />
-          <Tab.Screen name="Coaching" component={PoseDraw} />
+          <Tab.Screen name="Coaching" component={VideoStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />
         </Tab.Navigator>

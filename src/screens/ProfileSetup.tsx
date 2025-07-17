@@ -54,18 +54,18 @@ export default function ProfileSetup() {
                 visible={modalVisible1}
             >
                 <View style={styles.modal}>
-                <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Time To Set Up Your Profile!</Text>
-                <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Name</Text>
-                <TextInput placeholder="Enter your name" 
-                onChangeText={(text) => {AsyncStorage.setItem("Name", text); setName(text);}} 
-                style={styles.inputText}/>
-                <TouchableOpacity 
-                style={styles.button} 
-                onPress={() => {setModalVisible1(false); setModalVisible2(true);}}
-                disabled={!isNameFilled}
-                >
-                    <Text>Next -{">"}</Text>
-                </TouchableOpacity>
+                    <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Time To Set Up Your Profile!</Text>
+                    <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Name</Text>
+                    <TextInput placeholder="Enter your name" 
+                    onChangeText={(text) => {AsyncStorage.setItem("Name", text); setName(text);}} 
+                    style={styles.inputText}/>
+                    <TouchableOpacity 
+                    style={styles.button} 
+                    onPress={() => {setModalVisible1(false); setModalVisible2(true);}}
+                    disabled={!isNameFilled}
+                    >
+                        <Text>Next -{">"}</Text>
+                    </TouchableOpacity>
                 </View>
             </Modal>
             {/* Modal for Height Input */}

@@ -35,24 +35,6 @@ const usePosition = (p1, p2) => {
       }))
     );
   }
-
-  /*
-  const position = {
-    x1: useSharedValue(0),
-    y1: useSharedValue(0),
-    x2: useSharedValue(0),
-    y2: useSharedValue(0),
-  };
-
-  if (p1 && p2) {
-    position.x1.value = p1.x;
-    position.y1.value = p1.y;
-    position.x2.value = p2.x;
-    position.y2.value = p2.y;
-}
-
-  return position;
-  */
 };
 
 const defaultPose = {
@@ -99,11 +81,7 @@ const PoseScreen = () => {
   const [pose, setPose] = useState<PoseType>(defaultPose);
   const isFocused = useIsFocused();
   const dimensions = useWindowDimensions();
-  let i = 0;
 
-  
-  //const something = useSharedValue(usePosition(pose.leftAnklePosition, pose.leftEarPosition))
-  
   const leftWristToElbowPosition = usePosition(pose.leftWristPosition, pose.leftElbowPosition);
   const leftElbowToShoulderPosition = usePosition(pose.leftElbowPosition, pose.leftShoulderPosition);
   const leftShoulderToHipPosition = usePosition(pose.leftShoulderPosition, pose.leftHipPosition);
@@ -183,17 +161,14 @@ const PoseScreen = () => {
   // which needs a patch to the code
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    i++;
     const poseObject = detectPose(frame);
     const xFactor = dimensions.height / frame.width;
     const yFactor = dimensions.width / frame.height;
 
-    
-    console.log('Frame dimensions:', frame.width, frame.height);
-    console.log('Screen dimensions:', dimensions.width, dimensions.height);
-    console.log('X factor:', xFactor, 'Y factor:', yFactor);
-    
-  
+    //console.log('Frame dimensions:', frame.width, frame.height);
+    //console.log('Screen dimensions:', dimensions.width, dimensions.height);
+    //console.log('X factor:', xFactor, 'Y factor:', yFactor);
+     
     const poseCopy : PoseType = { ...defaultPose };
     console.log('Pose object:', poseObject);
 
@@ -214,8 +189,6 @@ const PoseScreen = () => {
   }, [sendToJS]);
 
   
-
-
   if (!device || !permissionsGranted) {
     return (
       <SafeAreaView style={styles.centered}>
@@ -224,7 +197,7 @@ const PoseScreen = () => {
     );
   }
 
-  
+  /*
   function DrawLine({p1, p2}) {
     if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0)) {
       return null;
@@ -243,6 +216,7 @@ const PoseScreen = () => {
       )
     }
   }
+  */
   
   return (
     <View style={styles.container}>

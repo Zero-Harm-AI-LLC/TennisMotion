@@ -86,7 +86,6 @@ const PoseDraw = () => {
     console.log('Frame dimensions:', frame.width, frame.height);
     console.log('Screen dimensions:', dimensions.width, dimensions.height);
     console.log('X factor:', xFactor, 'Y factor:', yFactor);
-    */
 
     const poseCopy : PoseType = { ...defaultPose };
     console.log('Pose object:', poseObject);

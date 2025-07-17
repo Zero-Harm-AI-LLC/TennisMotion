@@ -1,15 +1,81 @@
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Text, StyleSheet, Image, Alert } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, StyleSheet, Image, Alert, PanResponder, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useVideoContext } from '../context/VideoContext';
 import type { VideoItem } from '../context/VideoContext';
+import { center } from '@shopify/react-native-skia';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming, withSpring, runOnJS} from 'react-native-reanimated';
+import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
+//import Swipeable from 'react-native-swipeable-row';
 
 type RootStackParamList = {
   VideoPlayer: undefined;
   // ...other routes
 };
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+  const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.3;
+
+  const SwipeableItem = ({ item, onDelete }) => {
+    const translateX = useSharedValue(0);
+    const height = useSharedValue(180);
+    const opacity = useSharedValue(1);
+
+    const { deleteVideo } = useVideoContext();
+    const { videos } = useVideoContext();
+    const handleDelete = (id: string) => {
+        deleteVideo(id);
+    };
+
+    const panGesture = Gesture.Pan()
+      .onUpdate((event) => {
+        if (event.translationX < 0) {
+          translateX.value = Math.max(event.translationX, -SCREEN_WIDTH);
+        }
+      })
+      .onEnd(() => {
+        if (translateX.value < SWIPE_THRESHOLD) {
+          translateX.value = withSpring(-SCREEN_WIDTH);
+          height.value = withSpring(0);
+          opacity.value = withSpring(0, {}, () => {
+            runOnJS(handleDelete)(item.vidId);
+            for (let i = 0; i < videos.length; i++) {
+              console.log(videos[i].vidId);
+            }
+          });
+        } else {
+          translateX.value = withSpring(0);
+        }
+      });
+
+    const rStyle = useAnimatedStyle(() => ({
+      transform: [{ translateX: translateX.value }],
+    }));
+
+    const rContainerStyle = useAnimatedStyle(() => ({
+      height: height.value,
+      opacity: opacity.value,
+    }));
+
+    return (
+      <Animated.View style={[styles.itemContainer, rContainerStyle]}>
+        <Icon name="trash-can" size={50} color="#fff" style={styles.deleteIcon} />
+        <GestureDetector gesture={panGesture}>
+          <Animated.View style={[styles.videoItem, rStyle]}>
+            <Image
+              source={item.poster ? { uri: item.poster } : require('../assets/video-placeholder.png')}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+            <Icon name="play-circle-outline" size={50} color="#fff" style={styles.playIcon} />
+            <Text style={styles.videoText}>{item.vidId}</Text>
+          </Animated.View>
+        </GestureDetector>
+      </Animated.View>
+    );
+  };
 
 const VideoScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -24,28 +90,22 @@ const VideoScreen = () => {
     Alert.alert('Analyze', 'Display a list of stroke types such as Forehand, backhand, ..etc.');
   };  
 
-  const renderVideoItem = ({ item }: { item: VideoItem }) => (
-    <View style={styles.videoItem}>
-      <Image
-        source={item.poster ? { uri: item.poster } : require('../assets/video-placeholder.png')}
-        style={styles.thumbnail}
-        resizeMode="cover"
-      />
-      <Icon name="play-circle-outline" size={32} color="#fff" style={styles.playIcon} />
-      <Text style={styles.videoText}>Video {item.id}</Text>
-    </View>
-  );
+  const { deleteVideo } = useVideoContext();
+  const handleDelete = (id: string) => {
+      deleteVideo(id);
+  };
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <Text style={styles.title}>Recorded Videos</Text>
       <FlatList
         data={videos}
-        horizontal
-        keyExtractor={item => item.id}
-        renderItem={renderVideoItem}
+        keyExtractor={item => item.vidId}
+        renderItem={(item) => (
+          <SwipeableItem item={item.item} onDelete={handleDelete} />)}
         style={styles.videoList}
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{flexGrow: 1, alignItems: 'center'}}
       />
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button} onPress={handleAnalyze}>
@@ -57,31 +117,66 @@ const VideoScreen = () => {
           <Text style={styles.buttonText}>Stroke Type</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
-  videoList: { marginBottom: 24 },
+  container: {
+    flex: 1, 
+    paddingVertical: 16, 
+    backgroundColor: '#fff' 
+  },
+  title: {
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    margin: 20,
+    marginTop: 40,
+    marginBottom: 10,
+  },
+  videoList: {
+    margin: 30,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  itemContainer: {
+    width: '50%',
+    alignSelf: 'flex-end',
+    marginBottom: 50,
+    borderRadius: 10,
+    backgroundColor: 'red',
+    //overflow: 'hidden',
+  },
   videoItem: {
-    alignItems: 'center',
-    marginRight: 16,
-    width: 120,
-    height: 90,
+    alignItems: 'center',  
+    marginTop: 25,
+    marginBottom: 25,   
+    width: '100%',
+    height: 155,
     justifyContent: 'center',
+    alignContent: 'center',
+    backgroundColor: 'red',
+    padding: 0,
+    borderRadius: 10,
   },
   thumbnail: {
-    width: 120,
-    height: 70,
-    borderRadius: 8,
+    width: 240,
+    height: 180,
+    borderRadius: 10,
     backgroundColor: '#ccc',
+  },
+  deleteIcon: {
+    position: 'absolute',
+    alignSelf: 'flex-end',
+    right: 20,
+    top: 75,
+    color: '#fff',
+    fontSize: 24,
   },
   playIcon: {
     position: 'absolute',
-    top: 19,
-    left: 44,
+    top: 40,
+    left: 95,
     opacity: 0.8,
   },
   videoText: { marginTop: 8, fontSize: 14 },
