@@ -3,19 +3,22 @@ import React, { createContext, useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-export type VideoItem = { vidId: string; uri: string; poster?: string };
+export type VideoItem = { vidId: string; uri: string; poster?: string; stroke: string};
 type VideoContextType = {
   videos: VideoItem[];
-  addVideo: (vidID: string, vidURI: string, vidPoster: string) => void;
+  addVideo: (vidID: string, vidURI: string, vidPoster: string, vidStroke: string) => void;
   deleteVideo: (id: string) => void;
 };
 
+/*
 const mockVideos: VideoItem[] = [
   { vidId: 'Video 1', uri: 'https://example.com/video1.mp4', poster: 'https://example.com/poster1.jpg' },
   { vidId: 'Video 2', uri: 'https://example.com/video2.mp4', poster: 'https://example.com/poster2.jpg' },
   { vidId: 'Video 3', uri: 'https://example.com/video3.mp4', poster: '' },
-  { vidId: 'Video 4', uri: 'https://example.com/video4.mp4', poster: 'https://example.com/poster4.jpg' },
+  {
+  vidId: 'Video 4', uri: 'https://example.com/video4.mp4', poster: 'https://example.com/poster4.jpg' },
 ];
+*/
 
 let storedVideos: VideoItem[] = [];
 AsyncStorage.getAllKeys().then(keys => {
@@ -24,18 +27,13 @@ AsyncStorage.getAllKeys().then(keys => {
       const idNum = key.substring(8)
       //const poster = AsyncStorage.getItem('videoPoster' + idNum);
       AsyncStorage.getItem(key).then(uri => {
-        if (uri) {
-          AsyncStorage.getItem('videoPoster' + idNum).then(poster => {
-            if (poster) {
-              storedVideos.push({ vidId: idNum, uri: uri, poster: poster });
-              /*
-              if (!videos.includes(({ vidId: idNum, uri: uri, poster: poster }))) {
-                setVideos(vs => [...vs, { vidId: idNum, uri: uri, poster: poster }]);
-              }
-              */
+        AsyncStorage.getItem('videoPoster' + idNum).then(poster => {
+          AsyncStorage.getItem('videoStroke' + idNum).then(stroke => {
+            if (uri && poster && stroke) {
+              storedVideos.push({ vidId: idNum, uri: uri, poster: poster, stroke: stroke });
             }
           });
-        }
+        });
       });
     }
   });
@@ -66,7 +64,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   
   const addVideo = (
-    (vidID: string, vidURI: string, vidPoster: string) => {
+    (vidID: string, vidURI: string, vidPoster: string, vidStroke: string) => {
       /*
       if (videos.some(v => v.id === video.id)) {
         setVideos(vs => vs.filter(v => v.id !== video.id));
@@ -74,11 +72,12 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
         */
-      setVideos(vs => [...vs, { vidId: vidID, uri: vidURI, poster: vidPoster }]);
+      setVideos(vs => [...vs, { vidId: vidID, uri: vidURI, poster: vidPoster, stroke: vidStroke }]);
       //setVideos(videos);
       AsyncStorage.setItem('videoUri' + vidID, vidURI);
       AsyncStorage.setItem('videoPoster' + vidID, vidPoster);
-      
+      AsyncStorage.setItem('videoStroke' + vidID, vidStroke);
+
     }
   );
 
@@ -87,6 +86,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setVideos(vs => vs.filter(v => v.vidId !== id));
       AsyncStorage.removeItem('videoUri' + id);
       AsyncStorage.removeItem('videoPoster' + id);
+      AsyncStorage.removeItem('videoStroke' + id);
       /*
       AsyncStorage.setItem("Videos", JSON.stringify(videos));
       const jsonVal = await AsyncStorage.getItem('Videos');

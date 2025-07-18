@@ -69,8 +69,10 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
               style={styles.thumbnail}
               resizeMode="cover"
             />
-            <Icon name="play-circle-outline" size={50} color="#fff" style={styles.playIcon} />
-            <Text style={styles.videoText}>{item.vidId}</Text>
+            <TouchableOpacity onPress={() => handleDelete(item.vidId)}>
+              <Icon name="play-circle-outline" size={50} color="#fff" style={styles.playIcon} />
+            </TouchableOpacity>
+            <Text style={styles.videoText}> {item.vidId} ({item.stroke})</Text>
           </Animated.View>
         </GestureDetector>
       </Animated.View>
@@ -86,9 +88,6 @@ const VideoScreen = () => {
     navigation.navigate('VideoPlayer');
   };
 
-  const changeStrokeType = () => {
-    Alert.alert('Analyze', 'Display a list of stroke types such as Forehand, backhand, ..etc.');
-  };  
 
   const { deleteVideo } = useVideoContext();
   const handleDelete = (id: string) => {
@@ -112,10 +111,12 @@ const VideoScreen = () => {
           <Icon name="video-plus" size={24} color="#fff" />
           <Text style={styles.buttonText}>Analyze</Text>
         </TouchableOpacity>
+        {/*
         <TouchableOpacity style={styles.button} onPress={changeStrokeType}>
           <Icon name="chart-bar" size={24} color="#fff" />
           <Text style={styles.buttonText}>Stroke Type</Text>
         </TouchableOpacity>
+        */}
       </View>
     </GestureHandlerRootView>
   );
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     width: '50%',
-    alignSelf: 'flex-end',
+    //alignSelf: 'flex-end',
     marginBottom: 50,
     borderRadius: 10,
     backgroundColor: 'red',
@@ -179,7 +180,11 @@ const styles = StyleSheet.create({
     left: 95,
     opacity: 0.8,
   },
-  videoText: { marginTop: 8, fontSize: 14 },
+  videoText: {
+    marginTop: 3,
+    fontSize: 16,
+    fontFamily: 'Chalkboard SE',
+  },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-around' },
   button: {
     flexDirection: 'row',

@@ -115,7 +115,9 @@ const VideoPlayer = () => {
   const [isRecording, setIsRecording] = useState(false);
   const { addVideo } = useVideoContext();
   const isFocused = useIsFocused();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [titleModalVisible, setTitleModalVisible] = useState(false);
+  const [strokeModalVisible, setStrokeModalVisible] = useState(true);
+  const [selectedStroke, setSelectedStroke] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
 
@@ -151,6 +153,18 @@ const VideoPlayer = () => {
   const shoulderToShoulderPosition = usePosition(pose.leftShoulderPosition, pose.rightShoulderPosition);
   const hipToHipPosition = usePosition(pose.leftHipPosition, pose.rightHipPosition);
   const mouthPosition = usePosition(pose.leftMouthPosition, pose.rightMouthPosition);
+
+  const strokes: string[] = [
+    'Forehand',
+    'Backhand',
+    'Serve',
+    'Approach Shot',
+    'Forehand Volley',
+    'Backhand Volley',
+    'Overhead',
+    'Forehand Slice',
+    'Backhand Slice',
+  ]
 
   // Request permissions on mount
   useEffect(() => {
@@ -195,16 +209,16 @@ const VideoPlayer = () => {
         });
       });
       console.log("Adding now");
-      addVideo(videoTitle, pendingVideoUri, posterUri || '');
+      addVideo(videoTitle, pendingVideoUri, posterUri || '', selectedStroke);
       console.log("Video successfully added: " + videoTitle);
       //await CameraRoll.save(pendingVideoUri, { type: 'video' });
-      setModalVisible(false);
+      setTitleModalVisible(false);
       setPendingVideoUri(null);
       navigation.navigate('VideoScreen');
     } catch (e) {
       console.error(e)
       Alert.alert('Error', 'Failed to save video to gallery.');
-      setModalVisible(false);
+      setTitleModalVisible(false);
       setPendingVideoUri(null);
       navigation.navigate('VideoScreen');
     }
@@ -281,7 +295,7 @@ const VideoPlayer = () => {
             await AsyncStorage.setItem("NumVideos", (parseInt(vidNum) + 1).toString());
             console.log("NumVideos value stored: ", await AsyncStorage.getItem("NumVideos"));
             setPendingVideoUri(video.path.startsWith('file://') ? video.path : `file://${video.path}`);
-            setModalVisible(true);
+            setTitleModalVisible(true);
           } catch (e) {
             Alert.alert('Error', 'Failed to save video to gallery.');
           }
@@ -391,7 +405,7 @@ const VideoPlayer = () => {
       </View>
       <Modal
         animationType="slide"
-        visible={modalVisible}
+        visible={titleModalVisible}
         //onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modal}>
@@ -404,6 +418,28 @@ const VideoPlayer = () => {
           <TouchableOpacity onPress={handleModalClose}>
             <Text>OK</Text>
           </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        visible={strokeModalVisible}
+      >
+        <View style={styles.modal}>
+          <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Level</Text>
+          <View style={styles.buttonContainer}>
+            {strokes.map((stroke) => (
+              <TouchableOpacity 
+                key={stroke} 
+                style={styles.button} 
+                onPress={() => {
+                  setStrokeModalVisible(false);
+                  setSelectedStroke(stroke);
+                }}
+              >
+                <Text>{stroke}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </Modal>
     </View>
@@ -468,6 +504,23 @@ const styles = StyleSheet.create({
     left: 0,
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
+  },
+  button: {
+   borderColor: '#03adfc',
+   borderWidth: 1,
+   borderRadius: 5,
+   padding: 10,
+   margin: 5,
+   width: '40%',
+   alignItems: 'center',
+ },
+ buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '80%',
+    marginTop: 20,
+    alignItems: 'center',
+    flexWrap: 'wrap',
   },
 });
 
