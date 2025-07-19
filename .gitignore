@@ -121,3 +121,4 @@ yarn-error.log
 # training
 runs
 *.pt
+**/tennis-ball-detection-6/
