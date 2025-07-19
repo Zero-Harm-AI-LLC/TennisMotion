@@ -117,3 +117,7 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# training
+runs
+*.pt
