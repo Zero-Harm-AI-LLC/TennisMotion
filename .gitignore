@@ -123,5 +123,6 @@ runs
 tennis_session/tennis_ball_inference/*.pt
 **/tennis-ball-detection-6/
 **/COCO-Dataset-Limited-(Person-Only)-1/
+**/tennis-tracker-20/
 **/models/train/*
 !**/models/train/weights/
