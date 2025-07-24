@@ -120,6 +120,7 @@ const VideoPlayer = () => {
   const [selectedStroke, setSelectedStroke] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
+  let poseArray: PoseType[] = [];
 
   // pose positions
   const leftWristToElbowPosition = usePosition(pose.leftWristPosition, pose.leftElbowPosition);
@@ -209,7 +210,7 @@ const VideoPlayer = () => {
         });
       });
       console.log("Adding now");
-      addVideo(videoTitle, pendingVideoUri, posterUri || '', selectedStroke);
+      addVideo(videoTitle, pendingVideoUri, posterUri || '', selectedStroke, poseArray);
       console.log("Video successfully added: " + videoTitle);
       //await CameraRoll.save(pendingVideoUri, { type: 'video' });
       setTitleModalVisible(false);
@@ -224,11 +225,12 @@ const VideoPlayer = () => {
     }
   };
 
-  const handlePose = useCallback((result: any) => {
+  const handlePose = useCallback((result: PoseType) => {
     // This runs on the JS thread.
     console.log('Pose:', result);
     // You can call setState, navigation, etc. here
     setPose(result);
+    poseArray.push(result);
   }, []);
   const sendToJS = Worklets.createRunOnJS(handlePose);
 
@@ -274,6 +276,7 @@ const VideoPlayer = () => {
 
   // Handle start recording
   const handleStartRecording = useCallback(async () => {
+    poseArray = [];
     if (!cameraRef.current || isRecording) return;
     setIsRecording(true);
     try {

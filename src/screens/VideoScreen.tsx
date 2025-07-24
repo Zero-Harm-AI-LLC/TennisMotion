@@ -68,9 +68,10 @@ const SwipeableItem = ({ item, onDelete }) => {
     const uri = item.uri;
     const poster = item.poster || '';
     const stroke = item.stroke || '';
+    const poseArray = item.poses || [];
     deleteVideo(id);
     console.log(videos.length);
-    addVideo(id, uri, poster, stroke);
+    addVideo(id, uri, poster, stroke, poseArray);
     console.log(videos.length);
   }
 
