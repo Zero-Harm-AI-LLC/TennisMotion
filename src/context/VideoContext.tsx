@@ -1,24 +1,16 @@
 // src/context/VideoContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PoseType } from '../utils/types';
 
 
-export type VideoItem = { vidId: string; uri: string; poster?: string; stroke: string};
+export type VideoItem = { vidId: string; uri: string; poster?: string; stroke: string; poses: PoseType[]};
 type VideoContextType = {
   videos: VideoItem[];
-  addVideo: (vidID: string, vidURI: string, vidPoster: string, vidStroke: string) => void;
+  addVideo: (vidID: string, vidURI: string, vidPoster: string, vidStroke: string, vidPoses: PoseType[]) => void;
   deleteVideo: (id: string) => void;
 };
 
-/*
-const mockVideos: VideoItem[] = [
-  { vidId: 'Video 1', uri: 'https://example.com/video1.mp4', poster: 'https://example.com/poster1.jpg' },
-  { vidId: 'Video 2', uri: 'https://example.com/video2.mp4', poster: 'https://example.com/poster2.jpg' },
-  { vidId: 'Video 3', uri: 'https://example.com/video3.mp4', poster: '' },
-  {
-  vidId: 'Video 4', uri: 'https://example.com/video4.mp4', poster: 'https://example.com/poster4.jpg' },
-];
-*/
 
 let storedVideos: VideoItem[] = [];
 AsyncStorage.getAllKeys().then(keys => {
@@ -29,9 +21,14 @@ AsyncStorage.getAllKeys().then(keys => {
       AsyncStorage.getItem(key).then(uri => {
         AsyncStorage.getItem('videoPoster' + idNum).then(poster => {
           AsyncStorage.getItem('videoStroke' + idNum).then(stroke => {
-            if (uri && poster && stroke) {
-              storedVideos.push({ vidId: idNum, uri: uri, poster: poster, stroke: stroke });
-            }
+            AsyncStorage.getItem('videoPoses' + idNum).then(poses => {
+              let poseArray = poses ? JSON.parse(poses) : [];
+              if (uri && poster && stroke) {
+                storedVideos.push({ vidId: idNum, uri: uri, poster: poster, stroke: stroke, poses: poseArray });
+              }
+            }).catch(() => {
+              // Handle error if needed
+            });
           });
         });
       });
@@ -44,39 +41,14 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [videos, setVideos] = useState<VideoItem[]>(storedVideos);
   
-  /*
-  AsyncStorage.getAllKeys().then(keys => {
-    keys.forEach(key => {
-      if (key.startsWith('videoUri')) {
-        const idNum = key.substring(8)
-        AsyncStorage.getItem(key).then(uri => {
-          if (uri) {
-            if (!videos.includes(({ vidId: idNum, uri: uri, poster: '' }))) {
-              setVideos(vs => [...vs, { vidId: idNum, uri: uri, poster: '' }]);
-            }
-          }
-        });
-      }
-    });
-  });
-  */
-
-  
-  
   const addVideo = (
-    (vidID: string, vidURI: string, vidPoster: string, vidStroke: string) => {
-      /*
-      if (videos.some(v => v.id === video.id)) {
-        setVideos(vs => vs.filter(v => v.id !== video.id));
-        AsyncStorage.setItem('videoUri' + video.id, video.uri);
-        return;
-      }
-        */
-      setVideos(vs => [...vs, { vidId: vidID, uri: vidURI, poster: vidPoster, stroke: vidStroke }]);
-      //setVideos(videos);
+    (vidID: string, vidURI: string, vidPoster: string, vidStroke: string, vidPoses: PoseType[]) => {
+
+      setVideos(vs => [...vs, { vidId: vidID, uri: vidURI, poster: vidPoster, stroke: vidStroke, poses: vidPoses }]);
       AsyncStorage.setItem('videoUri' + vidID, vidURI);
       AsyncStorage.setItem('videoPoster' + vidID, vidPoster);
       AsyncStorage.setItem('videoStroke' + vidID, vidStroke);
+      AsyncStorage.setItem('videoPoses' + vidID, JSON.stringify(vidPoses));
 
     }
   );
@@ -87,14 +59,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       AsyncStorage.removeItem('videoUri' + id);
       AsyncStorage.removeItem('videoPoster' + id);
       AsyncStorage.removeItem('videoStroke' + id);
-      /*
-      AsyncStorage.setItem("Videos", JSON.stringify(videos));
-      const jsonVal = await AsyncStorage.getItem('Videos');
-      const val = jsonVal ? parseInt(jsonVal) : 0;
-      console.log("Videos value stored: ", val);
-      console.log("First Vid: ", videos[0]);
-      */
-      
+      AsyncStorage.removeItem('videoPoses' + id);
     }
   );
 
