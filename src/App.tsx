@@ -16,11 +16,11 @@ import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import VideoScreen from './screens/VideoScreen';
 import VideoPlayer from './screens/VideoPlayer';  
 import ProfileScreen from './screens/ProfileScreen';
-import PoseScreen from './screens/PoseScreen';
+import SessionPlayer from './screens/SessionPlayer';
 import { VideoProvider } from './context/VideoContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileSetup from './screens/ProfileSetup'
-import PoseDraw from './screens/PoseDraw';
+import PoseDraw from './screens/SessionPlayer';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -44,9 +44,6 @@ function SplashScreen() {
 // Placeholder views for tabs
 function StatsScreen() {
   return <View style={styles.center}><Text>Stats</Text></View>;
-}
-function SessionsScreen() {
-  return <View style={styles.center}><Text>Sessions</Text></View>;
 }
 function MoreScreen() {
   return <View style={styles.center}><Text>More</Text></View>;
@@ -94,7 +91,7 @@ export default function App() {
           }) as BottomTabNavigationOptions}
         >
           <Tab.Screen name="Stats" component={StatsScreen} />
-          <Tab.Screen name="Sessions" component={PoseScreen} />
+          <Tab.Screen name="Sessions" component={SessionPlayer} />
           <Tab.Screen name="Coaching" component={VideoStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />

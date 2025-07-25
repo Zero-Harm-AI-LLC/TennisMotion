@@ -33,7 +33,13 @@ export type PoseType = {
   rightEarPosition: {x: number, y: number},
   leftMouthPosition: {x: number, y: number},
   rightMouthPosition: {x: number, y: number},
-};
+}
+
+export type TennisObjType = {
+  backPlayer: {x: number, y: number, width: number, height: number},
+  frontPlayer: {x: number, y: number, width: number, height: number},
+  ball: {x: number, y: number, width: number, height: number}
+}
 
 export interface PoseDetectionOptions {
   // @default stream
