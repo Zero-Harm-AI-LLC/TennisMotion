@@ -4,6 +4,7 @@
 #import <VisionCamera/Frame.h>
 #import <React/RCTBridgeModule.h>
 #import "yolov8.h" // our model
+#import "YOLOv8Processor.h"
 
 @import CoreML;
 
@@ -97,11 +98,21 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
     }
     yolov8Input *input = [[yolov8Input alloc] initWithImage:pixelBuffer];
     yolov8Output *output = [__model predictionFromFeatures:input error:&error];
-
     if (error) {
         NSLog(@"CoreML Error: %@", error.localizedDescription);
     } else {
         NSLog(@"Prediction: %@", output);
+    }
+
+    MLMultiArray *rawOutput = output.var_914;
+    NSArray<NSDictionary *> *detections = [YOLOv8Processor processOutput:rawOutput confidenceThreshold:0.4];
+
+    for (NSDictionary *detection in detections) {
+        CGRect box = [detection[@"rect"] CGRectValue];
+        float confidence = [detection[@"confidence"] floatValue];
+        int classIndex = [detection[@"classIndex"] intValue];
+
+        NSLog(@"Box: %@ | Confidence: %.2f | Class: %d", NSStringFromCGRect(box), confidence, classIndex);
     }
   
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);

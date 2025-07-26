@@ -14,6 +14,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		FE0B399C2E3469D2004B245D /* yolov8.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE0B399B2E3469D2004B245D /* yolov8.mlpackage */; };
+		FE3F57D52E34832D0083147C /* YOLOv8Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = FE3F57D42E34832D0083147C /* YOLOv8Processor.m */; };
 		FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FEE3C8682E16086900974A80 /* PoseDetection.m */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,8 @@
 		FB60640CAA1AB6391A16B24C /* Pods-TennisMotion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisMotion.debug.xcconfig"; path = "Target Support Files/Pods-TennisMotion/Pods-TennisMotion.debug.xcconfig"; sourceTree = "<group>"; };
 		FCB179781A88484F99894212 /* TennisDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = TennisDetection.m; sourceTree = "<group>"; };
 		FE0B399B2E3469D2004B245D /* yolov8.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov8.mlpackage; sourceTree = "<group>"; };
+		FE3F57D42E34832D0083147C /* YOLOv8Processor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YOLOv8Processor.m; sourceTree = "<group>"; };
+		FE3F57D62E34833F0083147C /* YOLOv8Processor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YOLOv8Processor.h; sourceTree = "<group>"; };
 		FEE3C8682E16086900974A80 /* PoseDetection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PoseDetection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -69,6 +72,8 @@
 		2FC25846E93142A981FD1F52 /* TennisDetection */ = {
 			isa = PBXGroup;
 			children = (
+				FE3F57D62E34833F0083147C /* YOLOv8Processor.h */,
+				FE3F57D42E34832D0083147C /* YOLOv8Processor.m */,
 				FE0B399B2E3469D2004B245D /* yolov8.mlpackage */,
 				FCB179781A88484F99894212 /* TennisDetection.m */,
 			);
@@ -238,9 +243,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -255,9 +264,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -271,6 +284,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE3F57D52E34832D0083147C /* YOLOv8Processor.m in Sources */,
 				FE0B399C2E3469D2004B245D /* yolov8.mlpackage in Sources */,
 				FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
@@ -620,10 +634,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -693,10 +704,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
