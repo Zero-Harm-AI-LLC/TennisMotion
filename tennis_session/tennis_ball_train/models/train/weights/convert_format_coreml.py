@@ -6,10 +6,18 @@
 #
 from ultralytics import YOLO
 import shutil
+import sys
+
+if len(sys.argv) > 2:
+    pt_model_temp = sys.argv[1]
+    pt_model_path = sys.argv[2]
+    print(f"The model temp is: {pt_model_temp}  model path is: {pt_model_path}")
+else:
+    print("Not enough arguments provided.")
+    sys.exit()
 
 # === CONFIGURATION ===
-pt_model_path = 'yolov8.pt'  # Replace with your trained model
-shutil.copy('best.pt', pt_model_path)  # Copy the model to the specified path
+shutil.copy(pt_model_temp, pt_model_path)  # Copy the model to the specified path
 
 # === LOAD THE MODEL ===
 model = YOLO(pt_model_path)
