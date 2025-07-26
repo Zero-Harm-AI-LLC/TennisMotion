@@ -3,8 +3,8 @@
 #import <VisionCamera/VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
 #import <React/RCTBridgeModule.h>
-#import "yolov8.h" // our model
-#import "YOLOv8Processor.h"
+#import "yolov5.h" // our model
+#import "YOLOv5Processor.h"
 
 @import CoreML;
 
@@ -12,7 +12,7 @@
 @end
 
 CIContext *__ciContext;
-yolov8 *__model;
+yolov5 *__model;
 
 CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleBuffer,
                                                        CGSize targetSize,
@@ -94,18 +94,22 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
     // Load the model
     NSError *error = nil;
     if (!__model) {
-      __model = [[yolov8 alloc] init];
+      __model = [[yolov5 alloc] init];
     }
-    yolov8Input *input = [[yolov8Input alloc] initWithImage:pixelBuffer];
-    yolov8Output *output = [__model predictionFromFeatures:input error:&error];
+    double iouThreshold = 0.45;         // typical YOLO IoU threshold
+    double confidenceThreshold = 0.25;  // typical confidence threshold
+    yolov5Input *input = [[yolov5Input alloc] initWithImage:pixelBuffer
+                                               iouThreshold:iouThreshold
+                                        confidenceThreshold:confidenceThreshold];
+
+    yolov5Output *output = [__model predictionFromFeatures:input error:&error];
     if (error) {
         NSLog(@"CoreML Error: %@", error.localizedDescription);
     } else {
         NSLog(@"Prediction: %@", output);
     }
 
-    MLMultiArray *rawOutput = output.var_914;
-    NSArray<NSDictionary *> *detections = [YOLOv8Processor processOutput:rawOutput confidenceThreshold:0.4];
+    NSArray<NSDictionary *> *detections = [YOLOv5Processor processOutput:output.confidence coordinates:output.coordinates];
 
     for (NSDictionary *detection in detections) {
         CGRect box = [detection[@"rect"] CGRectValue];
