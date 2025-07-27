@@ -41,10 +41,16 @@ box_index: row index in the coordinates array (shape: 0 × 4) that gives the bou
     }
 
     NSUInteger numDetections = confidenceArray.shape[0].unsignedIntegerValue;
+    NSLog(@"shape: confidence %@, coordinates %@", confidenceArray.shape, coordinatesArray.shape);
+    NSLog(@"count: confidence %lu, coordinates %lu", confidenceArray.shape.count, coordinatesArray.shape.count);
+    NSLog(@"numDetections: %lu", numDetections);
+
 
     for (NSUInteger i = 0; i < numDetections; i++) {
         // Read classId, confidence, and box index
         NSNumber *row = [NSNumber numberWithUnsignedLong:i];
+        NSLog(@"number rows: %@", row);
+
       float classId = [[confidenceArray objectForKeyedSubscript:@[@(i), @0]] floatValue];
       float confidence = [[confidenceArray objectForKeyedSubscript:@[@(i), @1]] floatValue];
       NSUInteger boxIdx = (NSUInteger)[[confidenceArray objectForKeyedSubscript:@[@(i), @2]] floatValue];
@@ -54,6 +60,8 @@ box_index: row index in the coordinates array (shape: 0 × 4) that gives the bou
 
         // Read coordinates
         NSNumber *boxRow = [NSNumber numberWithUnsignedLong:boxIdx];
+        NSLog(@"number Box row: %@", boxRow);
+
         float x = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @0]] floatValue];
         float y = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @1]] floatValue];
         float w = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @2]] floatValue];

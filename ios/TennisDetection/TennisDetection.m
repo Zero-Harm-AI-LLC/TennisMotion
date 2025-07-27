@@ -2,9 +2,13 @@
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
 #import <VisionCamera/VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreImage/CoreImage.h>
+#import <CoreVideo/CoreVideo.h>
 #import <React/RCTBridgeModule.h>
 #import "yolov5.h" // our model
 #import "YOLOv5Processor.h"
+#import <UIKit/UIKit.h>
 
 @import CoreML;
 
@@ -12,56 +16,87 @@
 
 @end
 
-//CIContext *__ciContext;
-//yolov5 *__model;
-
-CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleBuffer,
+CIImage *ConvertAndResizeSampleBufferToCIImage(CMSampleBufferRef sampleBuffer,
                                                        CGSize targetSize,
-                                                       CIContext *ciContext) {
-    CVPixelBufferRef inputBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    if (!inputBuffer) return nil;
+                                               BOOL cropToFill) {
+  CVPixelBufferRef inputBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+  if (!inputBuffer) return nil;
+  
+  CIImage *inputImage = [CIImage imageWithCVPixelBuffer:inputBuffer];
+  if (!inputImage) return nil;
+  
+  CGFloat inputWidth = CVPixelBufferGetWidth(inputBuffer);
+  CGFloat inputHeight = CVPixelBufferGetHeight(inputBuffer);
+  CGFloat targetWidth = targetSize.width;
+  CGFloat targetHeight = targetSize.height;
+  
+  CGFloat scaleX = targetWidth / inputWidth;
+  CGFloat scaleY = targetHeight / inputHeight;
+  CGFloat scale = cropToFill ? MAX(scaleX, scaleY) : MIN(scaleX, scaleY);
+  
+  CGFloat scaledWidth = inputWidth * scale;
+  CGFloat scaledHeight = inputHeight * scale;
+  
+  // Compute translation to center image
+  CGFloat xOffset = (targetWidth - scaledWidth) / 2.0;
+  CGFloat yOffset = (targetHeight - scaledHeight) / 2.0;
+  
+  CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
+  CGAffineTransform translateTransform = CGAffineTransformMakeTranslation(xOffset, yOffset);
+  CIImage *scaledImage = [[inputImage imageByApplyingTransform:scaleTransform]
+                          imageByApplyingTransform:translateTransform];
+  
+  return scaledImage;
+}
 
-    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:inputBuffer];
-
-    // Scale the image to the target size
-    CGFloat scaleX = targetSize.width / ciImage.extent.size.width;
-    CGFloat scaleY = targetSize.height / ciImage.extent.size.height;
-    CGFloat scale = MIN(scaleX, scaleY); // Maintain aspect ratio
-
-    CIImage *resizedImage = [ciImage imageByApplyingTransform:CGAffineTransformMakeScale(scale, scale)];
-    resizedImage = [resizedImage imageByCroppingToRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
-
-    // Create output buffer
-    CVPixelBufferRef outputBuffer = NULL;
+CVPixelBufferRef CIImageGetCVPixelBufferRef(CIImage *scaledImage,
+                                                CGSize targetSize) {
+    // Create output pixel buffer
     NSDictionary *attributes = @{
-        (NSString *)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-        (NSString *)kCVPixelBufferWidthKey: @(targetSize.width),
-        (NSString *)kCVPixelBufferHeightKey: @(targetSize.height),
         (NSString *)kCVPixelBufferCGImageCompatibilityKey: @YES,
         (NSString *)kCVPixelBufferCGBitmapContextCompatibilityKey: @YES,
     };
-
+    CVPixelBufferRef outputBuffer = NULL;
     CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault,
                                           targetSize.width,
                                           targetSize.height,
                                           kCVPixelFormatType_32BGRA,
                                           (__bridge CFDictionaryRef)attributes,
                                           &outputBuffer);
-  if (status != kCVReturnSuccess) {
-    NSLog(@"Failed to create pixel buffer");
-    return nil;
-  }
 
-    // Render resized image into output buffer
-    [ciContext render:resizedImage toCVPixelBuffer:outputBuffer];
+    if (status != kCVReturnSuccess) {
+        return nil;
+    }
+
+    // Render using CIContext
+    static CIContext *context = nil;
+    if (!context) {
+        context = [CIContext contextWithOptions:nil];
+    }
+
+    CVPixelBufferLockBaseAddress(outputBuffer, 0);
+    [context render:scaledImage toCVPixelBuffer:outputBuffer];
+    CVPixelBufferUnlockBaseAddress(outputBuffer, 0);
 
     return outputBuffer;
+ }
+
+CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
+                                  CGSize targetSize) {
+
+  // Render with CIContext
+  static CIContext *ciContext = nil;
+  if (!ciContext) {
+      ciContext = [CIContext contextWithOptions:nil];
+  }
+
+  CGImageRef cgImage = [ciContext createCGImage:scaledImage
+                                     fromRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
+
+  return cgImage; // Call CGImageRelease() when done
 }
 
 @implementation TennisDetectionPlugin
-
-CIContext *__ciContext;
-yolov5 *__model;
 
 NSArray<NSString *> *__classLabels = @[
   @"player-back",
@@ -72,8 +107,6 @@ NSArray<NSString *> *__classLabels = @[
 - (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
                            withOptions:(NSDictionary* _Nullable)options {
   self = [super initWithProxy:proxy withOptions:options];
-  __ciContext = [CIContext contextWithOptions:nil];
-
   return self;
 }
 
@@ -83,35 +116,44 @@ NSArray<NSString *> *__classLabels = @[
     NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
 
     CMSampleBufferRef sampleBuffer = frame.buffer;
-  
-    // Apply a color transform if needed (e.g., kCIYpCbCrToRGBA)
-    // This implicitly handles the YUV to RGB conversion
-    if (!__ciContext) {
-      __ciContext = [CIContext contextWithOptions:nil];
-    }
 
     CGSize targetSize = { 640, 640 };
-    CVPixelBufferRef pixelBuffer = ConvertAndResizeSampleBufferForCoreML(sampleBuffer, targetSize, __ciContext);
-    if (!pixelBuffer) {
-        NSLog(@"Failed to get pixel buffer");
-        return data;
+    CIImage *image = ConvertAndResizeSampleBufferToCIImage(sampleBuffer, targetSize, false);
+    if (!image) {
+      NSLog(@"Failed to get pixel buffer");
+      return data;
     }
-
-    // (Optional) Lock base address if you need to access raw pixels
-    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-
+  
     // Load the model
     NSError *error = nil;
-    if (!__model) {
-      __model = [[yolov5 alloc] init];
+    static yolov5 *model = nil;
+    if (!model) {
+      model = [[yolov5 alloc] init];
     }
-    double iouThreshold = 0.45;         // typical YOLO IoU threshold
+
+    double iouThreshold = 0.7;         // typical YOLO IoU threshold
     double confidenceThreshold = 0.25;  // typical confidence threshold
+
+#ifdef CVPIXEL
+    CVPixelBufferRef pixelBuffer = CIImageGetCVPixelBufferRef(image, targetSize);
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+#else
+    CGImageRef pixelBuffer = CIImageGetCGImageRef(image, targetSize);
+#endif
+    if (!pixelBuffer) {
+      NSLog(@"Failed to get pixel buffer");
+      return data;
+    }
+  
+#ifdef CVPIXEL
     yolov5Input *input = [[yolov5Input alloc] initWithImage:pixelBuffer
                                                iouThreshold:iouThreshold
                                         confidenceThreshold:confidenceThreshold];
-
-    yolov5Output *output = [__model predictionFromFeatures:input error:&error];
+#else
+    yolov5Input *input = [[yolov5Input alloc] initWithImageFromCGImage:pixelBuffer iouThreshold:iouThreshold                                               confidenceThreshold:confidenceThreshold error:&error];
+//  yolov5Input *input = [[yolov5Input alloc] initWithImageAtURL:(nonnull NSURL *) iouThreshold:iouThreshold             //                               confidenceThreshold:confidenceThreshold error:&error];
+#endif
+    yolov5Output *output = [model predictionFromFeatures:input error:&error];
     if (error) {
         NSLog(@"CoreML Error: %@", error.localizedDescription);
     } else {
@@ -142,9 +184,12 @@ NSArray<NSString *> *__classLabels = @[
           [data[label] addObject:box];
       }
     }
-
+#ifdef CVPIXEL
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
     CVPixelBufferRelease(pixelBuffer); // release memory when done
+#else
+    CGImageRelease(pixelBuffer);
+#endif
   /*
     data[@"backPlayer"] = @{@"x": @(0.0), @"y": @(0.0), @"width": @(20.0), @"height": @(20.0)};
     data[@"frontPlayer"] = @{@"x": @(100.0), @"y": @(100.0), @"width": @(20.0), @"height": @(20.0)};
