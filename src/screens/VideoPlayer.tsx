@@ -237,6 +237,9 @@ const VideoPlayer = () => {
   const frameProcessor = useFrameProcessor((frame) => {
       'worklet';
       const poseObject = detectPose(frame);
+      if (!poseObject)
+        return;
+
       const xFactor = dimensions.height / frame.width;
       const yFactor = dimensions.width / frame.height;
   

@@ -46,9 +46,11 @@
                    completion:^(NSArray<MLKPose*> *_Nullable poses,
                               NSError *_Nullable error) {
             if (error != nil) {
-                RCTResponseErrorBlock error;
+                NSLog(@"Pose detection error: %@", error.localizedDescription);
+                dispatch_group_leave(dispatchGroup); // prevent deadlock!
                 return;
             }
+
             if (poses.count > 0) {
 
                 for (MLKPose *pose in poses) {
@@ -224,8 +226,12 @@
             dispatch_group_leave(dispatchGroup);
 
         }];
-        });
-    dispatch_group_wait(dispatchGroup, DISPATCH_TIME_FOREVER);
+      });
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC); // 3 seconds
+    if (dispatch_group_wait(dispatchGroup, timeout) != 0) {
+        NSLog(@"Timed out waiting for pose detection.");
+    }
+  
     return data;
 }
 
