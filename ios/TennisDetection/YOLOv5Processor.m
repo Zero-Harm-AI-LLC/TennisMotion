@@ -29,8 +29,9 @@
 confidence: model's probability score for that detection.
 box_index: row index in the coordinates array (shape: 0 × 4) that gives the bounding box for this detection.
  */
-+ (NSArray<NSDictionary *> *)parseOutput:(MLMultiArray *)confidenceArray
-                                                coordinates:(MLMultiArray *)coordinatesArray {
++ (NSArray<NSDictionary *> *)processOutput:(MLMultiArray *)confidenceArray
+                               coordinates:(MLMultiArray *)coordinatesArray {
+
     NSMutableArray<NSDictionary *> *results = [NSMutableArray array];
 
     if (confidenceArray.shape.count != 2 || confidenceArray.shape[1].intValue != 3 ||

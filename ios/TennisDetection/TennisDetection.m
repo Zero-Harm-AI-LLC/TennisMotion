@@ -9,10 +9,11 @@
 @import CoreML;
 
 @interface TennisDetectionPlugin : FrameProcessorPlugin
+
 @end
 
-CIContext *__ciContext;
-yolov5 *__model;
+//CIContext *__ciContext;
+//yolov5 *__model;
 
 CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleBuffer,
                                                        CGSize targetSize,
@@ -59,6 +60,9 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
 
 @implementation TennisDetectionPlugin
 
+CIContext *__ciContext;
+yolov5 *__model;
+
 - (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
                            withOptions:(NSDictionary* _Nullable)options {
   self = [super initWithProxy:proxy withOptions:options];
@@ -70,10 +74,9 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
 
-  NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
 
     CMSampleBufferRef sampleBuffer = frame.buffer;
-    CVPixelBufferRef pixelBufferYUV = CMSampleBufferGetImageBuffer(sampleBuffer);
   
     // Apply a color transform if needed (e.g., kCIYpCbCrToRGBA)
     // This implicitly handles the YUV to RGB conversion
@@ -106,21 +109,22 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
     if (error) {
         NSLog(@"CoreML Error: %@", error.localizedDescription);
     } else {
-        NSLog(@"Prediction: %@", output);
-    }
-
-    NSArray<NSDictionary *> *detections = [YOLOv5Processor processOutput:output.confidence coordinates:output.coordinates];
-
-    for (NSDictionary *detection in detections) {
+      NSLog(@"Prediction: %@", output);
+      
+      NSArray<NSDictionary *> *detections = [YOLOv5Processor processOutput:output.confidence coordinates:output.coordinates];
+      
+      for (NSDictionary *detection in detections) {
         CGRect box = [detection[@"rect"] CGRectValue];
         float confidence = [detection[@"confidence"] floatValue];
         int classIndex = [detection[@"classIndex"] intValue];
-
+        
         NSLog(@"Box: %@ | Confidence: %.2f | Class: %d", NSStringFromCGRect(box), confidence, classIndex);
+      }
     }
-  
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
 
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    CVPixelBufferRelease(pixelBuffer); // release memory when done
+  
     data[@"backPlayer"] = @{@"x": @(0.0), @"y": @(0.0), @"width": @(20.0), @"height": @(20.0)};
     data[@"frontPlayer"] = @{@"x": @(100.0), @"y": @(100.0), @"width": @(20.0), @"height": @(20.0)};
     data[@"ball"] = @{@"x": @(200.0), @"y": @(200.0), @"width": @(10.0), @"height": @(10.0)};
