@@ -29,58 +29,80 @@
 confidence: model's probability score for that detection.
 box_index: row index in the coordinates array (shape: 0 × 4) that gives the bounding box for this detection.
  */
-+ (NSArray<NSDictionary *> *)processOutput:(MLMultiArray *)confidenceArray
+
++ (NSMutableArray *)processOutput:(MLMultiArray *)confidenceArray
                                coordinates:(MLMultiArray *)coordinatesArray {
-
-    NSMutableArray<NSDictionary *> *results = [NSMutableArray array];
-
-    if (confidenceArray.shape.count != 2 || confidenceArray.shape[1].intValue != 3 ||
-        coordinatesArray.shape.count != 2 || coordinatesArray.shape[1].intValue != 4) {
-        NSLog(@"Invalid shape: confidence %@, coordinates %@", confidenceArray.shape, coordinatesArray.shape);
-        return results;
-    }
-
-    NSUInteger numDetections = confidenceArray.shape[0].unsignedIntegerValue;
-    NSLog(@"shape: confidence %@, coordinates %@", confidenceArray.shape, coordinatesArray.shape);
-    NSLog(@"count: confidence %lu, coordinates %lu", confidenceArray.shape.count, coordinatesArray.shape.count);
-    NSLog(@"numDetections: %lu", numDetections);
+    
+    NSMutableArray *results = [NSMutableArray array];
+    static NSArray *classNames = @[@"player-back", @"player-front", @"tennis-ball"];
 
 
-    for (NSUInteger i = 0; i < numDetections; i++) {
-        // Read classId, confidence, and box index
-        NSNumber *row = [NSNumber numberWithUnsignedLong:i];
-        NSLog(@"number rows: %@", row);
+      // Validate shapes
+      if (confidenceArray.shape.count != 2 || coordinatesArray.shape.count != 2) {
+          NSLog(@"Unexpected shape in confidence or coordinates array");
+          return results;
+      }
 
-      float classId = [[confidenceArray objectForKeyedSubscript:@[@(i), @0]] floatValue];
-      float confidence = [[confidenceArray objectForKeyedSubscript:@[@(i), @1]] floatValue];
-      NSUInteger boxIdx = (NSUInteger)[[confidenceArray objectForKeyedSubscript:@[@(i), @2]] floatValue];
+      NSInteger boxCount = confidenceArray.shape[0].integerValue;
+      NSInteger classCount = confidenceArray.shape[1].integerValue;
+      NSInteger coordBoxCount = coordinatesArray.shape[0].integerValue;
+      NSInteger coordCount = coordinatesArray.shape[1].integerValue;
 
-        // Validate box index
-        if (boxIdx >= coordinatesArray.shape[0].unsignedIntegerValue) continue;
+      if (boxCount != coordBoxCount || coordCount != 4) {
+          NSLog(@"Mismatch between confidence and coordinate dimensions");
+          return results;
+      }
 
-        // Read coordinates
-        NSNumber *boxRow = [NSNumber numberWithUnsignedLong:boxIdx];
-        NSLog(@"number Box row: %@", boxRow);
+      if (boxCount == 0) {
+          NSLog(@"No detections found.");
+          return results;
+      }
 
-        float x = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @0]] floatValue];
-        float y = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @1]] floatValue];
-        float w = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @2]] floatValue];
-        float h = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @3]] floatValue];
+      for (NSInteger i = 0; i < boxCount; i++) {
+          float maxConfidence = 0.0;
+          NSInteger bestClass = -1;
 
-        // Add detection to results
-        NSDictionary *detection = @{
-            @"classId": @(classId),
-            @"confidence": @(confidence),
-            @"x": @(x),
-            @"y": @(y),
-            @"width": @(w),
-            @"height": @(h)
-        };
+          for (NSInteger j = 0; j < classCount; j++) {
+              NSInteger index = i * classCount + j;
+              float confidence = confidenceArray[index].floatValue;
+              if (confidence > maxConfidence) {
+                  maxConfidence = confidence;
+                  bestClass = j;
+              }
+          }
 
-        [results addObject:detection];
-    }
+          if (bestClass < 0 || bestClass >= classNames.count) continue;
 
-    return results;
-}
+          // Get bounding box [x, y, width, height]
+          NSInteger coordBase = i * 4;
+          float x = coordinatesArray[coordBase + 0].floatValue;
+          float y = coordinatesArray[coordBase + 1].floatValue;
+          float width = coordinatesArray[coordBase + 2].floatValue;
+          float height = coordinatesArray[coordBase + 3].floatValue;
 
+          NSDictionary *detection = @{
+              @"class": classNames[bestClass],
+              @"confidence": @(maxConfidence),
+              @"x": @(x),
+              @"y": @(y),
+              @"width": @(width),
+              @"height": @(height)
+          };
+
+          [results addObject:detection];
+      }
+
+      // Output results
+      for (NSDictionary *det in results) {
+          NSLog(@"Class: %@ | Conf: %.2f | Box: (%.2f, %.2f, %.2f, %.2f)",
+                det[@"class"],
+                [det[@"confidence"] floatValue],
+                [det[@"x"] floatValue],
+                [det[@"y"] floatValue],
+                [det[@"width"] floatValue],
+                [det[@"height"] floatValue]);
+      }
+  
+      return results;
+  }
 @end

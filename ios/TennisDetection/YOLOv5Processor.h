@@ -3,7 +3,7 @@
 
 @interface YOLOv5Processor : NSObject
 
-+ (NSArray<NSDictionary *> *)processOutput:(MLMultiArray *)confidenceArray
++ (NSMutableArray *)processOutput:(MLMultiArray *)confidenceArray
                                coordinates:(MLMultiArray *)coordinatesArray;
 
 @end
