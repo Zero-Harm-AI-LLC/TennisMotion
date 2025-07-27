@@ -35,10 +35,13 @@ export type PoseType = {
   rightMouthPosition: {x: number, y: number},
 }
 
-export type TennisObjType = {
-  "player-back": {x: number, y: number, width: number, height: number},
-  "player-front": {x: number, y: number, width: number, height: number},
-  "tennis-ball": {x: number, y: number, width: number, height: number}
+export type ObjectType = {
+    class: string,
+    confidence: number,
+    x: number,
+    y: number,
+    width: number,
+    height: number
 }
 
 export interface PoseDetectionOptions {

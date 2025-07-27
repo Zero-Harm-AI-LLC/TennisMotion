@@ -12,15 +12,9 @@ import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision
 import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { useSharedValue } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
-import { detectTennisObjPos } from '../utils/detectTennisObjPos';
-import { TennisObjType } from '../utils/types';
+import { detectObjects} from '../utils/detectObjects';
+import { ObjectType } from '../utils/types';
 import { Worklets } from 'react-native-worklets-core';
-
-const defaultTennisObjs : TennisObjType = {
-  "player-back": { x: 0, y: 0, width: 0, height: 0 },
-  "player-front": { x: 0, y: 0, width: 0, height: 0 },
-  "tennis-ball": { x: 0, y: 0, width: 0, height: 0 }
-};
 
 const desiredWidth = 1920;
 const desiredHeight = 1080;
@@ -30,7 +24,7 @@ const SessionPlayer = () => {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const [tennisObjPos, setTennisObjPos] = useState<TennisObjType>(defaultTennisObjs);
+  const [objects, setObjects] = useState<ObjectType[]>([]);
   
   const dimensions = useWindowDimensions();
 
@@ -47,17 +41,16 @@ const SessionPlayer = () => {
     );
   }, [device, desiredWidth, desiredHeight, desiredFps]);
 
-  const handlePositions = useCallback((result: any) => {
+  const handlePositions = useCallback((results: any) => {
     // This runs on the JS thread.
-    console.log('Tennis Obj Position:', result);
     // You can call setState, navigation, etc. here
-    setTennisObjPos(result);
+    setObjects(results);
   }, []);
   const sendToJS = Worklets.createRunOnJS(handlePositions);
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    const results = detectTennisObjPos(frame);
+    const results = detectObjects(frame) as unknown as ObjectType[];
 
     // turn 90 degrees clockwise
     // This is necessary because the camera frame is rotated 90 degrees clockwise
@@ -73,19 +66,16 @@ const SessionPlayer = () => {
     console.log('Screen dimensions:', dimensions.width, dimensions.height);
     console.log('X factor:', xFactor, 'Y factor:', yFactor);
 
-    const tennisObjCopy : TennisObjType = { ...defaultTennisObjs };
-    const tennisObj = results as unknown as TennisObjType;
-    console.log('Tennis objects position:', tennisObj);
-    
-    Object.keys(tennisObjCopy).forEach((key) => {
-      const box = tennisObj[key as keyof TennisObjType];
-      if (box) {
-        tennisObjCopy[key as keyof TennisObjType] = box;
-      }
-    })
-    
-    console.log('Adjusted Tennis objects position:', tennisObjCopy);
-    sendToJS(tennisObjCopy); // Calls JS safely
+    // Make a new array with scaled x, y, width, height
+    const resultsCopy = results.map(obj => ({
+      ...obj,
+      x: obj.x * xFactor,
+      y: obj.y * yFactor
+    }));
+
+    console.log('Tennis objects position:', results);
+    console.log('Adjusted Tennis objects position:', resultsCopy);
+    sendToJS(resultsCopy); // Calls JS safely
   }, [sendToJS]);
 
   useEffect(() => {
@@ -127,13 +117,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-  },
-  linesContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: Dimensions.get('window').height,
-    width: Dimensions.get('window').width,
   },
   permissionText: {
     color: '#fff',

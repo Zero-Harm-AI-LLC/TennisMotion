@@ -5,7 +5,7 @@ const LINKING_ERROR: string =
 
 const plugin: FrameProcessorPlugin | undefined = VisionCameraProxy.initFrameProcessorPlugin('detectTennisObjects', {});
 
-export function detectTennisObjPos(frame: Frame) {
+export function detectObjects(frame: Frame) {
   'worklet'
   if (plugin == null) {
     throw new Error("Failed to load Frame Processor Plugin!")
