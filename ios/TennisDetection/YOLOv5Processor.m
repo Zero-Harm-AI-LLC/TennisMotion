@@ -54,10 +54,10 @@ box_index: row index in the coordinates array (shape: 0 × 4) that gives the bou
 
         // Read coordinates
         NSNumber *boxRow = [NSNumber numberWithUnsignedLong:boxIdx];
-      float x = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @0]] floatValue];
-      float y = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @1]] floatValue];
-      float w = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @2]] floatValue];
-      float h = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @3]] floatValue];
+        float x = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @0]] floatValue];
+        float y = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @1]] floatValue];
+        float w = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @2]] floatValue];
+        float h = [[coordinatesArray objectForKeyedSubscript:@[@(boxIdx), @3]] floatValue];
 
         // Add detection to results
         NSDictionary *detection = @{

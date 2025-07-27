@@ -36,9 +36,9 @@ export type PoseType = {
 }
 
 export type TennisObjType = {
-  backPlayer: {x: number, y: number, width: number, height: number},
-  frontPlayer: {x: number, y: number, width: number, height: number},
-  ball: {x: number, y: number, width: number, height: number}
+  "player-back": {x: number, y: number, width: number, height: number},
+  "player-front": {x: number, y: number, width: number, height: number},
+  "tennis-ball": {x: number, y: number, width: number, height: number}
 }
 
 export interface PoseDetectionOptions {

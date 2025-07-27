@@ -17,9 +17,9 @@ import { TennisObjType } from '../utils/types';
 import { Worklets } from 'react-native-worklets-core';
 
 const defaultTennisObjs : TennisObjType = {
-  backPlayer: { x: 0, y: 0, width: 0, height: 0 },
-  frontPlayer: { x: 0, y: 0, width: 0, height: 0 },
-  ball: { x: 0, y: 0, width: 0, height: 0 }
+  "player-back": { x: 0, y: 0, width: 0, height: 0 },
+  "player-front": { x: 0, y: 0, width: 0, height: 0 },
+  "tennis-ball": { x: 0, y: 0, width: 0, height: 0 }
 };
 
 const desiredWidth = 1920;
@@ -47,17 +47,17 @@ const SessionPlayer = () => {
     );
   }, [device, desiredWidth, desiredHeight, desiredFps]);
 
-  const handlePose = useCallback((result: any) => {
+  const handlePositions = useCallback((result: any) => {
     // This runs on the JS thread.
     console.log('Tennis Obj Position:', result);
     // You can call setState, navigation, etc. here
     setTennisObjPos(result);
   }, []);
-  const sendToJS = Worklets.createRunOnJS(handlePose);
+  const sendToJS = Worklets.createRunOnJS(handlePositions);
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    const tennisObjPos = detectTennisObjPos(frame) as unknown as TennisObjType;
+    const results = detectTennisObjPos(frame);
 
     // turn 90 degrees clockwise
     // This is necessary because the camera frame is rotated 90 degrees clockwise
@@ -74,17 +74,16 @@ const SessionPlayer = () => {
     console.log('X factor:', xFactor, 'Y factor:', yFactor);
 
     const tennisObjCopy : TennisObjType = { ...defaultTennisObjs };
-    console.log('Tennis objects position:', tennisObjPos);
+    const tennisObj = results as unknown as TennisObjType;
+    console.log('Tennis objects position:', tennisObj);
+    
     Object.keys(tennisObjCopy).forEach((key) => {
-      const tennisObj = tennisObjPos[key as keyof TennisObjType];
-      tennisObjCopy[key as keyof TennisObjType] = {
-        y: tennisObj.y * yFactor,
-        x: tennisObj.y * xFactor,
-        width: tennisObj.width,
-        height: tennisObj.height,
+      const box = tennisObj[key as keyof TennisObjType];
+      if (box) {
+        tennisObjCopy[key as keyof TennisObjType] = box;
       }
     })
-
+    
     console.log('Adjusted Tennis objects position:', tennisObjCopy);
     sendToJS(tennisObjCopy); // Calls JS safely
   }, [sendToJS]);
