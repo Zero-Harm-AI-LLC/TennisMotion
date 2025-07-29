@@ -172,11 +172,9 @@ const VideoPlayer = () => {
     (async () => {
       const cameraStatus = await requestCameraPermission();
       const micStatus = await requestMicrophonePermission();
-      //const galleryStatus = await requestGalleryPermission();
       setPermissionsGranted(
         cameraStatus === 'granted' &&
         micStatus === 'granted' 
-        //&& galleryStatus === 'granted'
       );
     })();
   }, []);
@@ -195,10 +193,26 @@ const VideoPlayer = () => {
     }
   }
 
+  // Ask for permission before saving the file
+  async function saveVideoToGallery(videoUri: string) {
+    const hasPermission = await requestGalleryPermission();
+    if (!hasPermission) {
+      console.warn('No permission to save video.');
+      return;
+    }
+
+    try {
+      await CameraRoll.save(videoUri, {type: 'video'});
+      console.log('Video saved to gallery');
+    } catch (error) {
+      console.error('Failed to save video', error);
+    }
+  }
+
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
-      await CameraRoll.save(pendingVideoUri, { type: 'video' });
+      await saveVideoToGallery(pendingVideoUri);
       const posterUri = await createVideoThumbnail(pendingVideoUri);
       for (let i = 0; i < videos.length; i++) {
         console.log(videos[i].vidId);
@@ -463,11 +477,11 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     alignItems: 'center',
-    marginBottom: 0,
+    marginBottom: 10,
   },
   stopButton: {
     alignItems: 'center',
-    marginBottom: 0,
+    marginBottom: 10,
   },
   controlText: {
     color: '#fff',

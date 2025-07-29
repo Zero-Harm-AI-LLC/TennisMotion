@@ -4,7 +4,7 @@ import { View, Text, SafeAreaView, TextInput, Modal, TouchableOpacity, StyleShee
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
+import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { createThumbnail } from 'react-native-create-thumbnail';
 import Svg, { Line } from 'react-native-svg';
 import { detectObjects} from '../utils/detectObjects';
@@ -35,7 +35,7 @@ const SessionPlayer = () => {
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const { videos } = useVideoContext();
-  const { addVideo } = useVideoContext();
+  const { addSVideo } = useVideoContext();
 
   const desiredWidth = 1920;
   const desiredHeight = 1080;
@@ -105,7 +105,8 @@ const SessionPlayer = () => {
       const cameraStatus = await requestCameraPermission();
       const micStatus = await requestMicrophonePermission();
       setPermissionsGranted(
-        cameraStatus === 'granted' && micStatus === 'granted'
+        cameraStatus === 'granted' &&
+        micStatus === 'granted'
       );
     })();
   }, []);
@@ -121,6 +122,22 @@ const SessionPlayer = () => {
     } catch (error) {
       console.error('Error creating thumbnail:', error);
       return null;
+    }
+  }
+
+  // Ask for permission before saving the file
+  async function saveVideoToGallery(videoUri: string) {
+    const hasPermission = await requestGalleryPermission();
+    if (!hasPermission) {
+      console.warn('No permission to save video.');
+      return;
+    }
+
+    try {
+      await CameraRoll.save(videoUri, {type: 'video'});
+      console.log('Video saved to gallery');
+    } catch (error) {
+      console.error('Failed to save video', error);
     }
   }
 
@@ -163,7 +180,7 @@ const SessionPlayer = () => {
       setIsRecording(false);
       Alert.alert('Error', 'Could not start recording.');
     }
-  }, [isRecording, navigation, addVideo]);
+  }, [isRecording, navigation, addSVideo]);
 
   const handleStopRecording = useCallback(() => {
     if (cameraRef.current && isRecording) {
@@ -174,7 +191,7 @@ const SessionPlayer = () => {
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
-      await CameraRoll.save(pendingVideoUri, { type: 'video' });
+      await saveVideoToGallery(pendingVideoUri);
       const posterUri = await createVideoThumbnail(pendingVideoUri);
       for (let i = 0; i < videos.length; i++) {
         console.log(videos[i].vidId);
@@ -186,8 +203,8 @@ const SessionPlayer = () => {
         });
       });
       console.log("Adding now");
-      addVideo(videoTitle, pendingVideoUri, posterUri || '', selectedStroke, poseArray);
-      console.log("Video successfully added: " + videoTitle);
+      //addSVideo(videoTitle, pendingVideoUri, posterUri || '', objects);
+      //console.log("Video successfully added: " + videoTitle);
       //await CameraRoll.save(pendingVideoUri, { type: 'video' });
       setTitleModalVisible(false);
       setPendingVideoUri(null);
