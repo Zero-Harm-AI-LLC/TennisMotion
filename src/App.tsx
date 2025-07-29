@@ -10,17 +10,18 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { View, Button, Text, StyleSheet, ActivityIndicator, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Modal, TextInput } from 'react-native';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import VideoScreen from './screens/VideoScreen';
 import VideoPlayer from './screens/VideoPlayer';  
 import ProfileScreen from './screens/ProfileScreen';
-import SessionPlayer from './screens/SessionPlayer';
 import { VideoProvider } from './context/VideoContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileSetup from './screens/ProfileSetup'
-import PoseDraw from './screens/SessionPlayer';
+import SessionScreen from './screens/SessionScreen';
+import SessionPlayer from './screens/SessionPlayer';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -53,6 +54,13 @@ const VideoStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="VideoScreen" component={VideoScreen} />
     <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
+  </Stack.Navigator>
+);
+
+const SessionStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="SessionScreen" component={SessionScreen} />
+    <Stack.Screen name="SessionPlayer" component={SessionPlayer} />
   </Stack.Navigator>
 );
 
@@ -91,7 +99,7 @@ export default function App() {
           }) as BottomTabNavigationOptions}
         >
           <Tab.Screen name="Stats" component={StatsScreen} />
-          <Tab.Screen name="Sessions" component={SessionPlayer} />
+          <Tab.Screen name="Sessions" component={SessionStack} />
           <Tab.Screen name="Coaching" component={VideoStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="More" component={MoreScreen} />

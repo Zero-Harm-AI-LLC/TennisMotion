@@ -11,8 +11,8 @@
 		4EF65EE4E4DD46F397F5DF7F /* TennisDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FCB179781A88484F99894212 /* TennisDetection.m */; };
 		6C8193727A64AD233C80A194 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7C9FC64C835F959310EB609C /* libPods-TennisMotion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9C67D1A09385E2FE05C35D7 /* libPods-TennisMotion.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		90C50C9621A6AFE637565A61 /* libPods-TennisMotion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F2DC64C9DFC4617E2414EA9 /* libPods-TennisMotion.a */; };
 		FEC6C2962E35894100B1BA50 /* YOLOv5Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = FEC6C2952E35894100B1BA50 /* YOLOv5Processor.m */; };
 		FEC6C2992E35899900B1BA50 /* yolov5.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FEC6C2982E35899900B1BA50 /* yolov5.mlpackage */; };
 		FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FEE3C8682E16086900974A80 /* PoseDetection.m */; };
@@ -23,11 +23,11 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = TennisMotion/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TennisMotion/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = TennisMotion/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		1F2DC64C9DFC4617E2414EA9 /* libPods-TennisMotion.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TennisMotion.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		51DC5DBDC1A8A71D96D4C946 /* Pods-TennisMotion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisMotion.release.xcconfig"; path = "Target Support Files/Pods-TennisMotion/Pods-TennisMotion.release.xcconfig"; sourceTree = "<group>"; };
+		6C118128A9A221EEFA38E25E /* Pods-TennisMotion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisMotion.debug.xcconfig"; path = "Target Support Files/Pods-TennisMotion/Pods-TennisMotion.debug.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = TennisMotion/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TennisMotion/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		D817AFAC18E966D66B9FFD53 /* Pods-TennisMotion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisMotion.debug.xcconfig"; path = "Target Support Files/Pods-TennisMotion/Pods-TennisMotion.debug.xcconfig"; sourceTree = "<group>"; };
-		DA0177787ADB3950805C3102 /* Pods-TennisMotion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisMotion.release.xcconfig"; path = "Target Support Files/Pods-TennisMotion/Pods-TennisMotion.release.xcconfig"; sourceTree = "<group>"; };
+		B9C67D1A09385E2FE05C35D7 /* libPods-TennisMotion.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TennisMotion.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FCB179781A88484F99894212 /* TennisDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = TennisDetection.m; sourceTree = "<group>"; };
 		FEC6C2942E35894100B1BA50 /* YOLOv5Processor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YOLOv5Processor.h; sourceTree = "<group>"; };
@@ -41,7 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				90C50C9621A6AFE637565A61 /* libPods-TennisMotion.a in Frameworks */,
+				7C9FC64C835F959310EB609C /* libPods-TennisMotion.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,7 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1F2DC64C9DFC4617E2414EA9 /* libPods-TennisMotion.a */,
+				B9C67D1A09385E2FE05C35D7 /* libPods-TennisMotion.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -114,8 +114,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				D817AFAC18E966D66B9FFD53 /* Pods-TennisMotion.debug.xcconfig */,
-				DA0177787ADB3950805C3102 /* Pods-TennisMotion.release.xcconfig */,
+				6C118128A9A221EEFA38E25E /* Pods-TennisMotion.debug.xcconfig */,
+				51DC5DBDC1A8A71D96D4C946 /* Pods-TennisMotion.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -135,13 +135,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TennisMotion" */;
 			buildPhases = (
-				55C6FA63246AE1D0E6021504 /* [CP] Check Pods Manifest.lock */,
+				6E939D1DF3BD90A93F7CA037 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				01B2C8840F318F55B4E557EE /* [CP] Embed Pods Frameworks */,
-				55C5B201B4139F2AD4D89B4E /* [CP] Copy Pods Resources */,
+				A95AB43B6F5A3D868D55EE9E /* [CP] Embed Pods Frameworks */,
+				D519C8DE0512E8BC12BCF77F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -213,41 +213,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		01B2C8840F318F55B4E557EE /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		55C5B201B4139F2AD4D89B4E /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		55C6FA63246AE1D0E6021504 /* [CP] Check Pods Manifest.lock */ = {
+		6E939D1DF3BD90A93F7CA037 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -267,6 +233,40 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A95AB43B6F5A3D868D55EE9E /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D519C8DE0512E8BC12BCF77F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TennisMotion/Pods-TennisMotion-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -289,7 +289,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D817AFAC18E966D66B9FFD53 /* Pods-TennisMotion.debug.xcconfig */;
+			baseConfigurationReference = 6C118128A9A221EEFA38E25E /* Pods-TennisMotion.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -426,7 +426,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DA0177787ADB3950805C3102 /* Pods-TennisMotion.release.xcconfig */;
+			baseConfigurationReference = 51DC5DBDC1A8A71D96D4C946 /* Pods-TennisMotion.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

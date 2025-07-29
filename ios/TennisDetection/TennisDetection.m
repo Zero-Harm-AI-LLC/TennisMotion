@@ -11,7 +11,7 @@
 #import <UIKit/UIKit.h>
 
 @import CoreML;
-//#ddefine DEBUG 1
+//#ddefine CVPIXEL_BUFFER
 @interface TennisDetectionPlugin : FrameProcessorPlugin
 
 @end
@@ -128,15 +128,7 @@ CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
   double iouThreshold = 0.7;         // typical YOLO IoU threshold
   double confidenceThreshold = 0.25;  // typical confidence threshold
   
-#ifdef DEBUG
-  /*
-   single image for debugging: https://drive.google.com/uc?export=download&id=1M9HFvFQnnBuZeO-iPxjepc5nH-LUfYyo
-   video file for debugging: https://drive.google.com/uc?export=download&id=1Dp7zPc8WXRvCj9tqvsH2vNARmOrFE9hK
-   */
-  NSString *urlString = @"https://drive.google.com/uc?export=download&id=1M9HFvFQnnBuZeO-iPxjepc5nH-LUfYyo";
-  NSURL *url = [NSURL URLWithString:urlString];
-  yolov5Input *input = [[yolov5Input alloc] initWithImageAtURL:url iouThreshold:iouThreshold                                                confidenceThreshold:confidenceThreshold error:&error];
-#elif CVPIXEL_BUFFER
+#if CVPIXEL_BUFFER
   CVPixelBufferRef pixelBuffer = CIImageGetCVPixelBufferRef(image, targetSize);
   if (!pixelBuffer) {
     NSLog(@"Failed to get pixel buffer");
@@ -168,8 +160,7 @@ CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
       NSLog(@"detection: %@", detection);
     }
   }
-#ifdef DEBUG
-#elif CVPIXEL_BUFFER
+#if CVPIXEL_BUFFER
   CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
   CVPixelBufferRelease(pixelBuffer); // release memory when done
 #else
