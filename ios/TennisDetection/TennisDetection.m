@@ -11,7 +11,6 @@
 #import <UIKit/UIKit.h>
 
 @import CoreML;
-//#ddefine CVPIXEL_BUFFER
 @interface TennisDetectionPlugin : FrameProcessorPlugin
 
 @end
@@ -128,7 +127,6 @@ CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
   double iouThreshold = 0.7;         // typical YOLO IoU threshold
   double confidenceThreshold = 0.25;  // typical confidence threshold
   
-#if CVPIXEL_BUFFER
   CVPixelBufferRef pixelBuffer = CIImageGetCVPixelBufferRef(image, targetSize);
   if (!pixelBuffer) {
     NSLog(@"Failed to get pixel buffer");
@@ -138,14 +136,14 @@ CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
   yolov5Input *input = [[yolov5Input alloc] initWithImage:pixelBuffer
                                              iouThreshold:iouThreshold
                                       confidenceThreshold:confidenceThreshold];
-#else
+/*
   CGImageRef pixelBuffer = CIImageGetCGImageRef(image, targetSize);
   if (!pixelBuffer) {
     NSLog(@"Failed to get pixel buffer");
     return data;
   }
   yolov5Input *input = [[yolov5Input alloc] initWithImageFromCGImage:pixelBuffer iouThreshold:iouThreshold                                                   confidenceThreshold:confidenceThreshold error:&error];
-#endif
+*/
   
   // Call YOLO predict
   yolov5Output *output = [model predictionFromFeatures:input error:&error];
@@ -160,12 +158,11 @@ CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
       NSLog(@"detection: %@", detection);
     }
   }
-#if CVPIXEL_BUFFER
   CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
   CVPixelBufferRelease(pixelBuffer); // release memory when done
-#else
+/*
   CGImageRelease(pixelBuffer);
-#endif
+*/
   return data;
 }
 
