@@ -12,6 +12,15 @@ const storeThumbnailLocally = async (tempThumbnailPath: string) => {
         await RNFS.moveFile(tempThumbnailPath.replace('file://', ''), newPath);
         console.log('Thumbnail saved at:', newPath);
         //return newPath;
+        if (__DEV__) {
+            const existed = await RNFS.exists(`file://${newPath}`);
+            if (!existed) { 
+                console.log(`file://${newPath}`, " does not existed"); 
+            } else {
+                const info = await RNFS.stat(`file://${newPath}`);
+                console.log("File info", info);
+            }
+        }
         return `file://${newPath}`;
     } catch (err) {
         console.error('Failed to move thumbnail:', err);

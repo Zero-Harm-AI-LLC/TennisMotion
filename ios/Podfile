@@ -32,7 +32,7 @@ target 'TennisMotion' do
     'MediaLibrary',
   ])
 
-  pod 'GoogleMLKit/PoseDetection', '8.0.0'
+	pod 'GoogleMLKit/PoseDetection', '8.0.0'
 
   post_install do |installer|
     installer.pods_project.build_configurations.each do |config|

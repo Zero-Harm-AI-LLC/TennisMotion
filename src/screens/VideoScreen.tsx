@@ -64,7 +64,7 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
         <GestureDetector gesture={panGesture}>
           <Animated.View style={[styles.videoItem, rStyle]}>
             <Image
-              source={item.poster ? { uri: item.poster } : require('../assets/video-placeholder.png')}
+              source={{ uri: item.poster }} 
               style={styles.thumbnail}
               resizeMode="cover"
             />             
