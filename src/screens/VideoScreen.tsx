@@ -24,7 +24,6 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
   const opacity = useSharedValue(1);
   const [videoVisible, setVideoVisible] = useState(false);
 
-  const { videos } = useVideoContext();
   const handleDelete = (uri: string, stroke: string) => { onDelete(uri, stroke);};
 
   const panGesture = Gesture.Pan()
@@ -56,7 +55,6 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
 
   const handleCloseModal = () => {
     setVideoVisible(false);
-    console.log(videos.length);
   }
 
   return (

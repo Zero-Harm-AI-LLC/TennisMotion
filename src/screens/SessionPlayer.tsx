@@ -5,8 +5,7 @@ import { View, Text, SafeAreaView, TextInput, Modal,
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
-import { createThumbnail } from 'react-native-create-thumbnail';
+import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { useVideoContext, VideoItem } from '../context/VideoContext';
 import Svg, { Line } from 'react-native-svg';
 import { detectObjects} from '../utils/detectObjects';
@@ -16,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import RNFS from 'react-native-fs';
+import { saveVideoToGallery, createVideoThumbnail } from '../utils/gallery';
 
 type RootStackParamList = {
   SessionScreen: undefined;
@@ -113,49 +112,6 @@ const SessionPlayer = () => {
     })();
   }, []);
 
-  const storeThumbnailLocally = async (tempThumbnailPath: string) => {
-    const fileName = `thumb_${Date.now()}.jpg`;
-    const newPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
-
-    try {
-      await RNFS.moveFile(tempThumbnailPath.replace('file://', ''), newPath);
-      console.log('Thumbnail saved at:', newPath);
-      return `file://${newPath}`;
-    } catch (err) {
-      console.error('Failed to move thumbnail:', err);
-      return null;
-    }
-  };
-
-  // Create thumbnail for the video
-  const createVideoThumbnail = async (videoUri: string) => {    
-    try {
-      const thumbnail = await createThumbnail({url: videoUri, timeStamp: 1000});
-      // Save in app storage
-      const savedPath = await storeThumbnailLocally(thumbnail.path);
-      return savedPath;
-    } catch (error) {
-      console.error('Error creating thumbnail:', error);
-      return null;
-    }
-  }
-
-  async function saveVideoToGallery(videoUri: string): Promise<string> {
-    const hasPermission = await requestGalleryPermission();
-    if (!hasPermission) {
-      console.warn('No permission to save video.');
-      return videoUri;
-    }
-    try {
-      const savedUri = await CameraRoll.save(videoUri, { type: 'video' });
-      setPendingVideoUri(savedUri);
-      return savedUri; // This is the permanent URI (e.g., ph://... or content://...)
-    } catch (error) {
-      console.error('Failed to save video to gallery:', error);
-      throw error; // Let the caller handle the error
-    }
-  }
-
   // Handle start recording
   const handleStartRecording = useCallback(async () => {
     if (!cameraRef.current || isRecording) return;
@@ -192,6 +148,7 @@ const SessionPlayer = () => {
     if (!pendingVideoUri) return;
     try {
       const savedUri = await saveVideoToGallery(pendingVideoUri);
+      setPendingVideoUri(savedUri);
       const posterUri = await createVideoThumbnail(pendingVideoUri);
       console.log("Adding now");
       const item : VideoItem = {title: videoTitle, uri: savedUri, poster: posterUri || '', 
