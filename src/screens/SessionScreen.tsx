@@ -25,8 +25,8 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
   const opacity = useSharedValue(1);
   const [videoVisible, setVideoVisible] = useState(false);
 
-  const { sessions, deleteVideo } = useVideoContext();
-  const handleDelete = (id: string, stroke: string) => { deleteVideo(id, stroke);};
+  const { sessions } = useVideoContext();
+  const handleDelete = (uri: string, stroke: string) => { onDelete(uri, stroke);};
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {

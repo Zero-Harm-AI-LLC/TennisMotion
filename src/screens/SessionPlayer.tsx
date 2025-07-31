@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import RNFS from 'react-native-fs';
 
 type RootStackParamList = {
   SessionScreen: undefined;
@@ -112,14 +113,27 @@ const SessionPlayer = () => {
     })();
   }, []);
 
+  const storeThumbnailLocally = async (tempThumbnailPath: string) => {
+    const fileName = `thumb_${Date.now()}.jpg`;
+    const newPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+
+    try {
+      await RNFS.moveFile(tempThumbnailPath.replace('file://', ''), newPath);
+      console.log('Thumbnail saved at:', newPath);
+      return `file://${newPath}`;
+    } catch (err) {
+      console.error('Failed to move thumbnail:', err);
+      return null;
+    }
+  };
+
   // Create thumbnail for the video
   const createVideoThumbnail = async (videoUri: string) => {    
     try {
-      const thumbnail = await createThumbnail({
-        url: videoUri,
-        timeStamp: 1000, // 1 second into the video
-      });
-      return thumbnail.path;
+      const thumbnail = await createThumbnail({url: videoUri, timeStamp: 1000});
+      // Save in app storage
+      const savedPath = await storeThumbnailLocally(thumbnail.path);
+      return savedPath;
     } catch (error) {
       console.error('Error creating thumbnail:', error);
       return null;
