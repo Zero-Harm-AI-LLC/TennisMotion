@@ -192,28 +192,29 @@ const VideoPlayer = () => {
     }
   }
 
-  // Ask for permission before saving the file
-  async function saveVideoToGallery(videoUri: string) {
+  async function saveVideoToGallery(videoUri: string): Promise<string> {
     const hasPermission = await requestGalleryPermission();
     if (!hasPermission) {
       console.warn('No permission to save video.');
-      return;
+      return videoUri;
     }
     try {
-      await CameraRoll.save(videoUri, {type: 'video'});
-      console.log('Video saved to gallery');
+      const savedUri = await CameraRoll.save(videoUri, { type: 'video' });
+      setPendingVideoUri(savedUri);
+      return savedUri; // This is the permanent URI (e.g., ph://... or content://...)
     } catch (error) {
-      console.error('Failed to save video to gallery', error);
+      console.error('Failed to save video to gallery:', error);
+      throw error; // Let the caller handle the error
     }
   }
 
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
-      await saveVideoToGallery(pendingVideoUri);
+      const savedUri = await saveVideoToGallery(pendingVideoUri);      
       const posterUri = await createVideoThumbnail(pendingVideoUri);
       console.log("Adding now");
-      const item : VideoItem = {title: videoTitle, uri: pendingVideoUri, poster: posterUri || '', 
+      const item : VideoItem = {title: videoTitle, uri: savedUri, poster: posterUri || '', 
                                 stroke: selectedStroke, data: poseArray};
       addVideo(item);
       setTitleModalVisible(false);

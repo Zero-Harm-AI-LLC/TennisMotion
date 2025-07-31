@@ -57,7 +57,6 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
 
   const handleCloseModal = () => {
     setVideoVisible(false);
-    deleteVideo(item.uri, item.stroke);
     console.log(sessions.length);
   }
 
