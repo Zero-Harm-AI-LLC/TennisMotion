@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert, Dimensions, Modal, TextInput, useWindowDimensions} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, SafeAreaView, Text, Alert, Dimensions,
+   Modal, TextInput, useWindowDimensions} from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { createThumbnail } from 'react-native-create-thumbnail';
+import { createThumbnail, Thumbnail } from 'react-native-create-thumbnail';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission} from '../utils/permissions';
 import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useVideoContext } from '../context/VideoContext';
+import { useVideoContext, VideoItem } from '../context/VideoContext';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import Svg, {Line} from 'react-native-svg';
 import { PoseType } from '../utils/types';
@@ -24,7 +24,8 @@ type RootStackParamList = {
 
 const AnimatedLine = Animated.createAnimatedComponent(Line);
 
-const usePosition = (p1, p2) => {
+type Point = { x: number; y: number } | null;
+const usePosition = (p1: Point, p2: Point) => {
   if (p1 && p2) {
     return ( 
       useAnimatedProps(() => ({
@@ -88,10 +89,8 @@ const VideoPlayer = () => {
   const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const { videos } = useVideoContext();
   const [pose, setPose] = useState<PoseType>(defaultPose);
-  const dimensions = useWindowDimensions();
-  
+  const dimensions = useWindowDimensions();  
 
   // Select 16:9 aspect ratio at 1080p resolution (1920x1080)
   const desiredWidth = 1920;
@@ -169,7 +168,7 @@ const VideoPlayer = () => {
 
   // Request permissions on mount
   useEffect(() => {
-    (async () => {
+   (async () => {
       const cameraStatus = await requestCameraPermission();
       const micStatus = await requestMicrophonePermission();
       setPermissionsGranted(
@@ -182,7 +181,7 @@ const VideoPlayer = () => {
   // Create thumbnail for the video
   const createVideoThumbnail = async (videoUri: string) => {    
     try {
-      const thumbnail = await createThumbnail({
+      const thumbnail: Thumbnail = await createThumbnail({
         url: videoUri,
         timeStamp: 1000, // 1 second into the video
       });
@@ -200,12 +199,11 @@ const VideoPlayer = () => {
       console.warn('No permission to save video.');
       return;
     }
-
     try {
       await CameraRoll.save(videoUri, {type: 'video'});
       console.log('Video saved to gallery');
     } catch (error) {
-      console.error('Failed to save video', error);
+      console.error('Failed to save video to gallery', error);
     }
   }
 
@@ -214,19 +212,10 @@ const VideoPlayer = () => {
     try {
       await saveVideoToGallery(pendingVideoUri);
       const posterUri = await createVideoThumbnail(pendingVideoUri);
-      for (let i = 0; i < videos.length; i++) {
-        console.log(videos[i].vidId);
-      }
-      console.log("Attempting to add: " + videoTitle);
-      AsyncStorage.getAllKeys().then(keys => {
-        keys.forEach(key => {
-          console.log("Key: " + key);
-        });
-      });
       console.log("Adding now");
-      addVideo(videoTitle, pendingVideoUri, posterUri || '', selectedStroke, poseArray);
-      console.log("Video successfully added: " + videoTitle);
-      //await CameraRoll.save(pendingVideoUri, { type: 'video' });
+      const item : VideoItem = {title: videoTitle, uri: pendingVideoUri, poster: posterUri || '', 
+                                stroke: selectedStroke, data: poseArray};
+      addVideo(item);
       setTitleModalVisible(false);
       setPendingVideoUri(null);
       navigation.navigate('VideoScreen');
@@ -249,46 +238,44 @@ const VideoPlayer = () => {
   const sendToJS = Worklets.createRunOnJS(handlePose);
 
   const frameProcessor = useFrameProcessor((frame) => {
-      'worklet';
-      const poseObject = detectPose(frame);
-      if (!poseObject)
-        return;
+    'worklet';
 
-      const xFactor = dimensions.height / frame.width;
-      const yFactor = dimensions.width / frame.height;
-  
-      //console.log('Frame dimensions:', frame.width, frame.height);
-      //console.log('Screen dimensions:', dimensions.width, dimensions.height);
-      //console.log('X factor:', xFactor, 'Y factor:', yFactor);
-       
-      const poseCopy : PoseType = { ...defaultPose };
-      console.log('Pose object:', poseObject);
-      if (isRecording) {
-        Object.keys(poseCopy).forEach((key) => {
-          const point = poseObject[key];
-          //console.log('Pose key:', key, 'Point:', point);
-          if (point) {
-            poseCopy[key as keyof PoseType] = {
-              y: point.x * yFactor,
-              x: dimensions.width - (point.y * xFactor),
-            };
-            console.log('Pose copy for key:', key, " point: ", point);
-          }
-        });
+    if (!isRecording) {
+        sendToJS(defaultPose); // Calls JS safely
+    }
+
+    const poseObject = detectPose(frame);
+    if (!poseObject)
+      return;
+
+    const xFactor = dimensions.height / frame.width;
+    const yFactor = dimensions.width / frame.height;
+
+    if (__DEV__) {
+      console.log('Frame dimensions:', frame.width, frame.height);
+      console.log('Screen dimensions:', dimensions.width, dimensions.height);
+      console.log('X factor:', xFactor, 'Y factor:', yFactor);
+    }
       
-        console.log('Pose copy:',  poseCopy);
-        sendToJS(poseCopy); // Calls JS safely
-      } else {
-        Object.keys(poseCopy).forEach((key) => {
+    const poseCopy : PoseType = { ...defaultPose };
+    console.log('Pose object:', poseObject);
+    if (isRecording) {
+      Object.keys(poseCopy).forEach((key) => {
+        const point = poseObject[key];
+        //console.log('Pose key:', key, 'Point:', point);
+        if (point) {
           poseCopy[key as keyof PoseType] = {
-            y: 0,
-            x: 0,
+            y: point.x * yFactor,
+            x: dimensions.width - (point.y * xFactor),
           };
-        });     
-        console.log('Pose copy:',  poseCopy);
-        sendToJS(poseCopy); // Calls JS safely
-      }
-    }, [sendToJS]);
+          console.log('Pose copy for key:', key, " point: ", point);
+        }
+      });
+    
+      console.log('Pose copy:',  poseCopy);
+      sendToJS(poseCopy); // Calls JS safely
+    } 
+  }, [sendToJS]);
   
 
   // Handle start recording
@@ -300,27 +287,12 @@ const VideoPlayer = () => {
       await cameraRef.current.startRecording({
         onRecordingFinished: async (video) => {
           try {
-            let vidNum = await AsyncStorage.getItem("NumVideos");
-            if (vidNum === null) {
-              vidNum = "5";
-            }
-            /*
-            for (let i = 0; i < videos.length; i++) {
-              console.log(videos[i].id);
-            }
-              */
-            //AsyncStorage.setItem("NumVideos", vidNum);
-            setVideoTitle("Video " + vidNum);
-            console.log("Initial Title: " + videoTitle + ", vidNum: " + vidNum);
-            await AsyncStorage.setItem("NumVideos", (parseInt(vidNum) + 1).toString());
-            console.log("NumVideos value stored: ", await AsyncStorage.getItem("NumVideos"));
             setPendingVideoUri(video.path.startsWith('file://') ? video.path : `file://${video.path}`);
             setTitleModalVisible(true);
           } catch (e) {
             Alert.alert('Error', 'Failed to save video to gallery.');
           }
           setIsRecording(false);
-          //navigation.navigate('VideoScreen'); // <-- Navigate away after recording
         },
         onRecordingError: (error) => {
           Alert.alert('Recording Error', error.message || 'Unknown error');
@@ -331,7 +303,7 @@ const VideoPlayer = () => {
       setIsRecording(false);
       Alert.alert('Error', 'Could not start recording.');
     }
-  }, [isRecording, navigation, addVideo]);
+  }, [isRecording]);
 
   const handleStopRecording = useCallback(() => {
     if (cameraRef.current && isRecording) {

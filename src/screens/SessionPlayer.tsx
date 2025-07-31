@@ -1,11 +1,13 @@
 import React, { useEffect,useRef, useState, useMemo, useCallback } from 'react';
 import 'react-native-reanimated';
-import { View, Text, SafeAreaView, TextInput, Modal, TouchableOpacity, StyleSheet, Alert, useWindowDimensions } from 'react-native';
+import { View, Text, SafeAreaView, TextInput, Modal,
+  TouchableOpacity, StyleSheet, Alert, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import { useVideoContext, VideoItem } from '../context/VideoContext';
 import Svg, { Line } from 'react-native-svg';
 import { detectObjects} from '../utils/detectObjects';
 import { ObjectType } from '../utils/types';
@@ -14,8 +16,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useVideoContext } from '../context/VideoContext';
 
 type RootStackParamList = {
   SessionScreen: undefined;
@@ -34,8 +34,7 @@ const SessionPlayer = () => {
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
   const [titleModalVisible, setTitleModalVisible] = useState(false);
-  const { videos } = useVideoContext();
-  const { addSVideo } = useVideoContext();
+  const { addVideo } = useVideoContext();
 
   const desiredWidth = 1920;
   const desiredHeight = 1080;
@@ -83,9 +82,11 @@ const SessionPlayer = () => {
         On iOS and Android, front camera preview is usually mirrored by default.
         */
       // Log frame and dimensions for debugging
-      console.log('Frame dimensions:', frame.width, frame.height);
-      console.log('Screen dimensions:', dimensions.width, dimensions.height);
-      console.log('X factor:', xFactor, 'Y factor:', yFactor);
+      if (__DEV__) {
+        console.log('Frame dimensions:', frame.width, frame.height);
+        console.log('Screen dimensions:', dimensions.width, dimensions.height);
+        console.log('X factor:', xFactor, 'Y factor:', yFactor);
+      }
 
       // Make a new array with scaled x, y, width, height
       const resultsCopy = results.map(obj => ({
@@ -149,27 +150,12 @@ const SessionPlayer = () => {
       await cameraRef.current.startRecording({
         onRecordingFinished: async (video) => {
           try {
-            let vidNum = await AsyncStorage.getItem("NumSVideos");
-            if (vidNum === null) {
-              vidNum = "5";
-            }
-            /*
-            for (let i = 0; i < videos.length; i++) {
-              console.log(videos[i].id);
-            }
-              */
-            //AsyncStorage.setItem("NumSVideos", vidNum);
-            setVideoTitle("Video " + vidNum);
-            console.log("Initial Title: " + videoTitle + ", vidNum: " + vidNum);
-            await AsyncStorage.setItem("NumSVideos", (parseInt(vidNum) + 1).toString());
-            console.log("NumVideos value stored: ", await AsyncStorage.getItem("NumSVideos"));
             setPendingVideoUri(video.path.startsWith('file://') ? video.path : `file://${video.path}`);
             setTitleModalVisible(true);
           } catch (e) {
             Alert.alert('Error', 'Failed to save video to gallery.');
           }
           setIsRecording(false);
-          //navigation.navigate('SessionScreen'); // <-- Navigate away after recording
         },
         onRecordingError: (error) => {
           Alert.alert('Recording Error', error.message || 'Unknown error');
@@ -180,7 +166,7 @@ const SessionPlayer = () => {
       setIsRecording(false);
       Alert.alert('Error', 'Could not start recording.');
     }
-  }, [isRecording, navigation, addSVideo]);
+  }, [isRecording]);
 
   const handleStopRecording = useCallback(() => {
     if (cameraRef.current && isRecording) {
@@ -193,19 +179,10 @@ const SessionPlayer = () => {
     try {
       await saveVideoToGallery(pendingVideoUri);
       const posterUri = await createVideoThumbnail(pendingVideoUri);
-      for (let i = 0; i < videos.length; i++) {
-        console.log(videos[i].vidId);
-      }
-      console.log("Attempting to add: " + videoTitle);
-      AsyncStorage.getAllKeys().then(keys => {
-        keys.forEach(key => {
-          console.log("Key: " + key);
-        });
-      });
       console.log("Adding now");
-      //addSVideo(videoTitle, pendingVideoUri, posterUri || '', objects);
-      //console.log("Video successfully added: " + videoTitle);
-      //await CameraRoll.save(pendingVideoUri, { type: 'video' });
+      const item : VideoItem = {title: videoTitle, uri: pendingVideoUri, poster: posterUri || '', 
+                                stroke: 'session', data: objects};
+      addVideo(item);
       setTitleModalVisible(false);
       setPendingVideoUri(null);
       navigation.navigate('SessionScreen');
