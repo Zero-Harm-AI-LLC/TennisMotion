@@ -182,9 +182,9 @@ const VideoPlayer = () => {
     try {
       const savedUri = await saveVideoToGallery(pendingVideoUri);  
       setPendingVideoUri(savedUri);
-      const posterUri = await createVideoThumbnail(pendingVideoUri);
+      const poster = await createVideoThumbnail(pendingVideoUri);
       console.log("Adding now");
-      const item : VideoItem = {title: videoTitle, uri: savedUri, poster: posterUri || '', 
+      const item : VideoItem = {title: videoTitle, uri: savedUri, poster: poster || '', 
                                 stroke: selectedStroke, data: poseArray};
       addVideo(item);
       setTitleModalVisible(false);

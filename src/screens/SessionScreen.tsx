@@ -10,6 +10,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming, withSpring, runO
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Video} from 'react-native-video';
 import SessionPlayer from './SessionPlayer';
+import RNFS from 'react-native-fs';
 
 type RootStackParamList = {
   SessionPlayer: undefined;
@@ -23,6 +24,7 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
   const translateX = useSharedValue(0);
   const height = useSharedValue(180);
   const opacity = useSharedValue(1);
+  const posterUri = `file://${RNFS.DocumentDirectoryPath}/${item.poster}`;
   const [videoVisible, setVideoVisible] = useState(false);
 
   const handleDelete = (uri: string, stroke: string) => { onDelete(uri, stroke);};
@@ -65,7 +67,7 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
         <GestureDetector gesture={panGesture}>
           <Animated.View style={[styles.videoItem, rStyle]}>
             <Image
-              source={item.poster ? { uri: item.poster } : require('../assets/video-placeholder.png')}
+              source={{ uri: posterUri }} 
               style={styles.thumbnail}
               resizeMode="cover"
             />

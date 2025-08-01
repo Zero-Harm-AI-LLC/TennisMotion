@@ -21,7 +21,7 @@ const storeThumbnailLocally = async (tempThumbnailPath: string) => {
                 console.log("File info", info);
             }
         }
-        return `file://${newPath}`;
+        return fileName;
     } catch (err) {
         console.error('Failed to move thumbnail:', err);
         return null;
