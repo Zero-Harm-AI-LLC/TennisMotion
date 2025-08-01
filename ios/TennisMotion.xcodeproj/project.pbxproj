@@ -14,7 +14,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		83527387CF9AA73C838044F0 /* libPods-TennisMotion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C924EB30B3373FBFB530DB2D /* libPods-TennisMotion.a */; };
 		FE6F1B962E3C6CB8003B60D7 /* CourtDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FE6F1B952E3C6CB8003B60D7 /* CourtDetection.m */; };
-		FE6F1B982E3C6EC4003B60D7 /* keypoints.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE6F1B972E3C6EC4003B60D7 /* keypoints.mlpackage */; };
+		FE858D652E3D5B5000108EA9 /* keypoints.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE858D642E3D5B5000108EA9 /* keypoints.mlpackage */; };
 		FEC6C2962E35894100B1BA50 /* YOLOv5Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = FEC6C2952E35894100B1BA50 /* YOLOv5Processor.m */; };
 		FEC6C2992E35899900B1BA50 /* yolov5.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FEC6C2982E35899900B1BA50 /* yolov5.mlpackage */; };
 		FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FEE3C8682E16086900974A80 /* PoseDetection.m */; };
@@ -33,7 +33,7 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FCB179781A88484F99894212 /* TennisDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = TennisDetection.m; sourceTree = "<group>"; };
 		FE6F1B952E3C6CB8003B60D7 /* CourtDetection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CourtDetection.m; sourceTree = "<group>"; };
-		FE6F1B972E3C6EC4003B60D7 /* keypoints.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = keypoints.mlpackage; sourceTree = "<group>"; };
+		FE858D642E3D5B5000108EA9 /* keypoints.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = keypoints.mlpackage; sourceTree = "<group>"; };
 		FEC6C2942E35894100B1BA50 /* YOLOv5Processor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YOLOv5Processor.h; sourceTree = "<group>"; };
 		FEC6C2952E35894100B1BA50 /* YOLOv5Processor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YOLOv5Processor.m; sourceTree = "<group>"; };
 		FEC6C2982E35899900B1BA50 /* yolov5.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov5.mlpackage; sourceTree = "<group>"; };
@@ -67,7 +67,7 @@
 		25827022BF404C1F8878E6A0 /* CourtDetection */ = {
 			isa = PBXGroup;
 			children = (
-				FE6F1B972E3C6EC4003B60D7 /* keypoints.mlpackage */,
+				FE858D642E3D5B5000108EA9 /* keypoints.mlpackage */,
 				FE6F1B952E3C6CB8003B60D7 /* CourtDetection.m */,
 			);
 			path = CourtDetection;
@@ -299,7 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */,
-				FE6F1B982E3C6EC4003B60D7 /* keypoints.mlpackage in Sources */,
+				FE858D652E3D5B5000108EA9 /* keypoints.mlpackage in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				FEC6C2992E35899900B1BA50 /* yolov5.mlpackage in Sources */,
 				4EF65EE4E4DD46F397F5DF7F /* TennisDetection.m in Sources */,
