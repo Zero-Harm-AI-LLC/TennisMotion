@@ -16,6 +16,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { saveVideoToGallery, createVideoThumbnail } from '../utils/gallery';
+import { detectCourt } from '../utils/detectCourt';
 
 type RootStackParamList = {
   SessionScreen: undefined;
@@ -31,6 +32,7 @@ const SessionPlayer = () => {
   const device = devices.find((d) => d.position === 'back');
   const [objects, setObjects] = useState<ObjectType[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  let frameNum = 0  // what frame we are on
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
   const [titleModalVisible, setTitleModalVisible] = useState(false);
@@ -58,6 +60,8 @@ const SessionPlayer = () => {
   const handlePositions = useCallback((results: any) => {
     // This runs on the JS thread.
     // You can call setState, navigation, etc. here
+    frameNum = frameNum + 1;
+    console.log("Session player current frame", frameNum);
     setObjects(results);
   }, []);
   const sendToJS = Worklets.createRunOnJS(handlePositions);
@@ -66,10 +70,14 @@ const SessionPlayer = () => {
     'worklet';
 
     if (!isRecording) {
+      return;
       const resultsCopy: ObjectType[] = [];
       sendToJS(resultsCopy); // Calls JS safely
     }
     else {
+        const courtPoints = detectCourt(frame);
+        console.log("calling detect court if frame 200 only ", courtPoints);
+    
       const results = detectObjects(frame) as unknown as ObjectType[];
 
       // turn 90 degrees clockwise
@@ -142,6 +150,7 @@ const SessionPlayer = () => {
     if (cameraRef.current && isRecording) {
       cameraRef.current.stopRecording();
     }
+    setIsRecording(false);
   }, [isRecording]);
 
   const handleModalClose = async () => {

@@ -99,7 +99,8 @@ NSMutableArray<NSValue *> *runModelOnFrame(CMSampleBufferRef sampleBuffer) {
     }
 
     MLMultiArray *resultArray = output.var_802;
-    
+    NSLog(@"Detected keypoints: %@", resultArray);
+
     // Access the result
     NSMutableArray<NSValue *> *keypoints = [NSMutableArray array];
     for (int i = 0; i < resultArray.count; i += 2) {

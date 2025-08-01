@@ -112,7 +112,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         
     _sqLite.insertItem(_tableName, item).then((success: boolean) => {
       if (success) {
-        if (__DEV__) { console.log('Video added successfully to database ', videos); }
+        if (__DEV__) { console.log('Video added successfully to database ', item); }
         if (vidItem.stroke === 'session') {
           setSessions(sessions => [...sessions, vidItem]);
         } else {
