@@ -75,8 +75,8 @@ const SessionPlayer = () => {
       sendToJS(resultsCopy); // Calls JS safely
     }
     else {
-        const courtPoints = detectCourt(frame);
-        console.log("calling detect court if frame 200 only ", courtPoints);
+        //const courtPoints = detectCourt(frame);
+        //console.log("calling detect court if frame 200 only ", courtPoints);
     
       const results = detectObjects(frame) as unknown as ObjectType[];
 
@@ -97,6 +97,7 @@ const SessionPlayer = () => {
       }
 
       // Make a new array with scaled x, y, width, height
+      /*
       const resultsCopy = results.map(obj => ({
         ...obj,
         x: obj.x * xFactor,
@@ -105,6 +106,9 @@ const SessionPlayer = () => {
 
       console.log('Tennis objects position:', results);
       console.log('Adjusted Tennis objects position:', resultsCopy);
+      sendToJS(resultsCopy); // Calls JS safely
+      */
+      const resultsCopy: ObjectType[] = [];
       sendToJS(resultsCopy); // Calls JS safely
     }
   }, [sendToJS]);

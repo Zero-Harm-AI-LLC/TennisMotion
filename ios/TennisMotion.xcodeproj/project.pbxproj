@@ -15,8 +15,8 @@
 		83527387CF9AA73C838044F0 /* libPods-TennisMotion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C924EB30B3373FBFB530DB2D /* libPods-TennisMotion.a */; };
 		FE6F1B962E3C6CB8003B60D7 /* CourtDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FE6F1B952E3C6CB8003B60D7 /* CourtDetection.m */; };
 		FE858D652E3D5B5000108EA9 /* keypoints.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE858D642E3D5B5000108EA9 /* keypoints.mlpackage */; };
-		FE858D732E3DCB0800108EA9 /* YOLOv8Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = FE858D722E3DCB0800108EA9 /* YOLOv8Processor.m */; };
-		FE858D772E3DCBC200108EA9 /* yolov8.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE858D762E3DCBC200108EA9 /* yolov8.mlpackage */; };
+		FE858D7A2E3DCF1300108EA9 /* YOLOProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = FE858D792E3DCF1300108EA9 /* YOLOProcessor.m */; };
+		FE858D7C2E3DCF4E00108EA9 /* yolov8_nms.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = FE858D7B2E3DCF4E00108EA9 /* yolov8_nms.mlpackage */; };
 		FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = FEE3C8682E16086900974A80 /* PoseDetection.m */; };
 /* End PBXBuildFile section */
 
@@ -34,9 +34,9 @@
 		FCB179781A88484F99894212 /* TennisDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = TennisDetection.m; sourceTree = "<group>"; };
 		FE6F1B952E3C6CB8003B60D7 /* CourtDetection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CourtDetection.m; sourceTree = "<group>"; };
 		FE858D642E3D5B5000108EA9 /* keypoints.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = keypoints.mlpackage; sourceTree = "<group>"; };
-		FE858D712E3DCB0800108EA9 /* YOLOv8Processor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YOLOv8Processor.h; sourceTree = "<group>"; };
-		FE858D722E3DCB0800108EA9 /* YOLOv8Processor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YOLOv8Processor.m; sourceTree = "<group>"; };
-		FE858D762E3DCBC200108EA9 /* yolov8.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov8.mlpackage; sourceTree = "<group>"; };
+		FE858D782E3DCF1300108EA9 /* YOLOProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YOLOProcessor.h; sourceTree = "<group>"; };
+		FE858D792E3DCF1300108EA9 /* YOLOProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YOLOProcessor.m; sourceTree = "<group>"; };
+		FE858D7B2E3DCF4E00108EA9 /* yolov8_nms.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov8_nms.mlpackage; sourceTree = "<group>"; };
 		FEE3C8682E16086900974A80 /* PoseDetection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PoseDetection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,9 +85,9 @@
 		2FC25846E93142A981FD1F52 /* TennisDetection */ = {
 			isa = PBXGroup;
 			children = (
-				FE858D762E3DCBC200108EA9 /* yolov8.mlpackage */,
-				FE858D712E3DCB0800108EA9 /* YOLOv8Processor.h */,
-				FE858D722E3DCB0800108EA9 /* YOLOv8Processor.m */,
+				FE858D7B2E3DCF4E00108EA9 /* yolov8_nms.mlpackage */,
+				FE858D782E3DCF1300108EA9 /* YOLOProcessor.h */,
+				FE858D792E3DCF1300108EA9 /* YOLOProcessor.m */,
 				FCB179781A88484F99894212 /* TennisDetection.m */,
 			);
 			path = TennisDetection;
@@ -298,13 +298,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE858D772E3DCBC200108EA9 /* yolov8.mlpackage in Sources */,
 				FEE3C86A2E16086900974A80 /* PoseDetection.m in Sources */,
 				FE858D652E3D5B5000108EA9 /* keypoints.mlpackage in Sources */,
+				FE858D7A2E3DCF1300108EA9 /* YOLOProcessor.m in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				4EF65EE4E4DD46F397F5DF7F /* TennisDetection.m in Sources */,
-				FE858D732E3DCB0800108EA9 /* YOLOv8Processor.m in Sources */,
 				FE6F1B962E3C6CB8003B60D7 /* CourtDetection.m in Sources */,
+				FE858D7C2E3DCF4E00108EA9 /* yolov8_nms.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

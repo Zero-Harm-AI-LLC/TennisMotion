@@ -61,7 +61,7 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
   }
 
   return (
-    <View style={{ marginBottom: 30, alignContent: 'center' }}> 
+    <View style={{ marginBottom: 30, alignContent: 'space-evenly' }}> 
       <Animated.View style={[styles.itemContainer, rContainerStyle]}> 
         <Icon name="trash-can" size={50} color="#fff" style={styles.deleteIcon} />
         <GestureDetector gesture={panGesture}>
@@ -71,9 +71,14 @@ const SwipeableItem = ({ item, onDelete }: { item: VideoItem; onDelete: (uri: st
               style={styles.thumbnail}
               resizeMode="cover"
             />
-            <TouchableOpacity onPress={() => setVideoVisible(true)} style={styles.playIcon}>
-              <Icon name="play-circle-outline" size={50} color="black" />
-            </TouchableOpacity>
+            <View style={styles.centeredIconRow}>
+              <TouchableOpacity onPress={() => setVideoVisible(true)} style={styles.iconButton}>
+                <Icon name="play-circle-outline" size={50} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setVideoVisible(true)} style={styles.iconButton}>
+                <Icon name="chart-bar-stacked" size={50} color="white" />
+              </TouchableOpacity>
+            </View>
             <Modal
               visible={videoVisible}
               animationType='slide'
@@ -191,18 +196,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
   },
-  playIcon: {
-    position: 'absolute',
-    top: '35%',
-    left: '40%',
-    opacity: 0.8,
-    zIndex: 9999,
+  iconButton: {
+    padding: 10,
   },
   videoText: {
     marginTop: 3,
     fontSize: 16,
     fontFamily: 'Chalkboard SE',
     alignSelf: 'center',
+  },
+  centeredIconRow: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Optional spacing
+    gap: 30, // if RN >= 0.71
   },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-around' },
   button: {

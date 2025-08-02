@@ -2,59 +2,135 @@
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
 #import <VisionCamera/VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreImage/CoreImage.h>
+#import <CoreVideo/CoreVideo.h>
 #import <React/RCTBridgeModule.h>
-#import "yolov8.h" // our model
-#import "YOLOv8Processor.h"
+#import "yolov8_nms.h" // our model
+#import "YOLOProcessor.h"
+#import <UIKit/UIKit.h>
 
 @import CoreML;
-
 @interface TennisDetectionPlugin : FrameProcessorPlugin
+
 @end
 
-CIContext *__ciContext;
-yolov8 *__model;
+CIImage *ConvertAndResizeSampleBufferToCIImage(CMSampleBufferRef sampleBuffer,
+                                               CGSize targetSize,
+                                               BOOL cropToFill) {
+  CVPixelBufferRef inputBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+  if (!inputBuffer) return nil;
+  
+  CIImage *inputImage = [CIImage imageWithCVPixelBuffer:inputBuffer];
+  if (!inputImage) return nil;
+  
+  CGFloat inputWidth = CVPixelBufferGetWidth(inputBuffer);
+  CGFloat inputHeight = CVPixelBufferGetHeight(inputBuffer);
+  CGFloat targetWidth = targetSize.width;
+  CGFloat targetHeight = targetSize.height;
+  
+  CGFloat scaleX = targetWidth / inputWidth;
+  CGFloat scaleY = targetHeight / inputHeight;
+  CGFloat scale = cropToFill ? MAX(scaleX, scaleY) : MIN(scaleX, scaleY);
+  
+  CGFloat scaledWidth = inputWidth * scale;
+  CGFloat scaledHeight = inputHeight * scale;
+  
+  // Compute translation to center image
+  CGFloat xOffset = (targetWidth - scaledWidth) / 2.0;
+  CGFloat yOffset = (targetHeight - scaledHeight) / 2.0;
+  
+  CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
+  CGAffineTransform translateTransform = CGAffineTransformMakeTranslation(xOffset, yOffset);
+  CIImage *scaledImage = [[inputImage imageByApplyingTransform:scaleTransform]
+                          imageByApplyingTransform:translateTransform];
+  
+  return scaledImage;
+}
 
-CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleBuffer,
-                                                       CGSize targetSize,
-                                                       CIContext *ciContext) {
-    CVPixelBufferRef inputBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    if (!inputBuffer) return nil;
-
-    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:inputBuffer];
-
-    // Scale the image to the target size
-    CGFloat scaleX = targetSize.width / ciImage.extent.size.width;
-    CGFloat scaleY = targetSize.height / ciImage.extent.size.height;
-    CGFloat scale = MIN(scaleX, scaleY); // Maintain aspect ratio
-
-    CIImage *resizedImage = [ciImage imageByApplyingTransform:CGAffineTransformMakeScale(scale, scale)];
-    resizedImage = [resizedImage imageByCroppingToRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
-
-    // Create output buffer
-    CVPixelBufferRef outputBuffer = NULL;
-    NSDictionary *attributes = @{
-        (NSString *)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-        (NSString *)kCVPixelBufferWidthKey: @(targetSize.width),
-        (NSString *)kCVPixelBufferHeightKey: @(targetSize.height),
-        (NSString *)kCVPixelBufferCGImageCompatibilityKey: @YES,
-        (NSString *)kCVPixelBufferCGBitmapContextCompatibilityKey: @YES,
-    };
-
-    CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                          targetSize.width,
-                                          targetSize.height,
-                                          kCVPixelFormatType_32BGRA,
-                                          (__bridge CFDictionaryRef)attributes,
-                                          &outputBuffer);
+CVPixelBufferRef CIImageGetCVPixelBufferRef(CIImage *scaledImage,
+                                            CGSize targetSize) {
+  // Create output pixel buffer
+  NSDictionary *attributes = @{
+    (NSString *)kCVPixelBufferCGImageCompatibilityKey: @YES,
+    (NSString *)kCVPixelBufferCGBitmapContextCompatibilityKey: @YES,
+  };
+  CVPixelBufferRef outputBuffer = NULL;
+  CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                        targetSize.width,
+                                        targetSize.height,
+                                        kCVPixelFormatType_32BGRA,
+                                        (__bridge CFDictionaryRef)attributes,
+                                        &outputBuffer);
+  
   if (status != kCVReturnSuccess) {
-    NSLog(@"Failed to create pixel buffer");
     return nil;
   }
+  
+  // Render using CIContext
+  static CIContext *context = nil;
+  if (!context) {
+    context = [CIContext contextWithOptions:nil];
+  }
+  
+  CVPixelBufferLockBaseAddress(outputBuffer, 0);
+  [context render:scaledImage toCVPixelBuffer:outputBuffer];
+  CVPixelBufferUnlockBaseAddress(outputBuffer, 0);
+  
+  return outputBuffer;
+}
 
-    // Render resized image into output buffer
-    [ciContext render:resizedImage toCVPixelBuffer:outputBuffer];
+CGImageRef CIImageGetCGImageRef(CIImage *scaledImage,
+                                CGSize targetSize) {
+  
+  // Render with CIContext
+  static CIContext *ciContext = nil;
+  if (!ciContext) {
+    ciContext = [CIContext contextWithOptions:nil];
+  }
+  
+  CGImageRef cgImage = [ciContext createCGImage:scaledImage
+                                       fromRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
+  
+  return cgImage; // Call CGImageRelease() when done
+}
 
-    return outputBuffer;
+void SaveCIImageToPNG(CIImage *image, CGSize size, NSString *filename) {
+    static CIContext *context = nil;
+    if (!context) {
+        context = [CIContext contextWithOptions:nil];
+    }
+
+    // Create CGImage from CIImage
+    CGImageRef cgImage = [context createCGImage:image fromRect:CGRectMake(0, 0, size.width, size.height)];
+    if (!cgImage) {
+        NSLog(@"Failed to create CGImage from CIImage.");
+        return;
+    }
+
+    // Convert to UIImage
+    UIImage *uiImage = [UIImage imageWithCGImage:cgImage];
+    CGImageRelease(cgImage);
+
+    // Convert to PNG data
+    NSData *pngData = UIImagePNGRepresentation(uiImage);
+    if (!pngData) {
+        NSLog(@"Failed to generate PNG data.");
+        return;
+    }
+
+    // Create full file path in the Documents directory
+    NSString *docsDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *filePath = [docsDir stringByAppendingPathComponent:filename];
+
+    // Write to disk
+    NSError *error = nil;
+    [pngData writeToFile:filePath options:NSDataWritingAtomic error:&error];
+    if (error) {
+        NSLog(@"Failed to write image to disk: %@", error);
+    } else {
+        NSLog(@"Image saved to: %@", filePath);
+    }
 }
 
 @implementation TennisDetectionPlugin
@@ -62,59 +138,81 @@ CVPixelBufferRef ConvertAndResizeSampleBufferForCoreML(CMSampleBufferRef sampleB
 - (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
                            withOptions:(NSDictionary* _Nullable)options {
   self = [super initWithProxy:proxy withOptions:options];
-  __ciContext = [CIContext contextWithOptions:nil];
-
   return self;
 }
 
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
-
+  
+  NSMutableArray *data = [[NSMutableArray alloc] init];
+  
   CMSampleBufferRef sampleBuffer = frame.buffer;
-
-  // Apply a color transform if needed (e.g., kCIYpCbCrToRGBA)
-  // This implicitly handles the YUV to RGB conversion
-  if (!__ciContext) {
-    __ciContext = [CIContext contextWithOptions:nil];
-  }
-
+  
   CGSize targetSize = { 640, 640 };
-  CVPixelBufferRef pixelBuffer = ConvertAndResizeSampleBufferForCoreML(sampleBuffer, targetSize, __ciContext);
-  if (!pixelBuffer) {
-      NSLog(@"Failed to get pixel buffer");
-      return nil;
+  BOOL cropToFill = YES; // whether to crop or fit the image
+  CIImage *image = ConvertAndResizeSampleBufferToCIImage(sampleBuffer, targetSize, cropToFill);
+  if (!image) {
+    NSLog(@"Failed to get pixel buffer");
+    return data;
+  } else {
+    // Save the CIImage to PNG for debugging
+    //SaveCIImageToPNG(image, targetSize, @"tennis_detection_input.png");
   }
-
-  // (Optional) Lock base address if you need to access raw pixels
-  CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-
+  
   // Load the model
   NSError *error = nil;
-  if (!__model) {
-    __model = [[yolov8 alloc] init];
+  static yolov8_nms *model = nil;
+  if (!model) {
+    model = [[yolov8_nms alloc] init];
   }
-  yolov8Input *input = [[yolov8Input alloc] initWithImage:pixelBuffer];
-  yolov8Output *output = [__model predictionFromFeatures:input error:&error];
-  if (error) {
-      NSLog(@"CoreML Error: %@", error.localizedDescription);
-  } else {
-      NSLog(@"Prediction: %@", output.var_914);
+  
+  double iouThreshold = 0.7;         // typical YOLO IoU threshold
+  double confidenceThreshold = 0.25;  // typical confidence threshold
+  
+  CVPixelBufferRef pixelBuffer = CIImageGetCVPixelBufferRef(image, targetSize);
+  if (!pixelBuffer) {
+    NSLog(@"Failed to get pixel buffer");
+    return data;
   }
-
-  MLMultiArray *rawOutput = output.var_914;
-  NSArray<NSDictionary *> *detections = [YOLOv8Processor processOutput:rawOutput confidenceThreshold:0.4];
-  NSLog(@"detections: %@", detections);
-
-  CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-  CVPixelBufferRelease(pixelBuffer);
+  CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+  yolov8_nmsInput *input = [[yolov8_nmsInput alloc] initWithImage:pixelBuffer
+                                             iouThreshold:iouThreshold
+                                      confidenceThreshold:confidenceThreshold];
 /*
-    data[@"backPlayer"] = @{@"x": @(0.0), @"y": @(0.0), @"width": @(20.0), @"height": @(20.0)};
-    data[@"frontPlayer"] = @{@"x": @(100.0), @"y": @(100.0), @"width": @(20.0), @"height": @(20.0)};
-    data[@"ball"] = @{@"x": @(200.0), @"y": @(200.0), @"width": @(10.0), @"height": @(10.0)};
- */
-  return detections;
-}
+  CGImageRef pixelBuffer = CIImageGetCGImageRef(image, targetSize);
+  if (!pixelBuffer) {
+    NSLog(@"Failed to get pixel buffer");
+    return data;
+  }
+  yolov5Input *input = [[yolov5Input alloc] initWithImageFromCGImage:pixelBuffer iouThreshold:iouThreshold                                                   confidenceThreshold:confidenceThreshold error:&error];
+*/
+  
+  // Call YOLO predict
+  yolov8_nmsOutput *output = [model predictionFromFeatures:input error:&error];
+  if (error) {
+    NSLog(@"CoreML Error: %@", error.localizedDescription);
+  } else {
+    NSLog(@"Prediction: %@", output);
+    
+    CGSize cameraSize = CGSizeMake(frame.width, frame.height);
+    CGSize modelInputSize = CGSizeMake(640, 640);
 
+    data = [YOLOProcessor processOutput:output.confidence
+                                        coordinates:output.coordinates
+                                         cameraSize:cameraSize
+                                     modelInputSize:modelInputSize];
+
+    for (NSMutableArray *detection in data) {
+      NSLog(@"detection: %@", detection);
+    }
+  }
+  CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+  CVPixelBufferRelease(pixelBuffer); // release memory when done
+/*
+  CGImageRelease(pixelBuffer);
+*/
+  return data;
+}
 
 VISION_EXPORT_FRAME_PROCESSOR(TennisDetectionPlugin, detectTennisObjects)
 
