@@ -238,6 +238,7 @@ const SessionPlayer = () => {
       >
         <View style={styles.modal}>
           <TextInput
+            autoFocus={true}
             style={styles.inputText}
             placeholder="Enter video title"
             value={videoTitle}
