@@ -1,10 +1,9 @@
 import React, { useEffect,useRef, useState, useMemo, useCallback } from 'react';
 import 'react-native-reanimated';
-import { View, Text, SafeAreaView, TextInput, Modal,
+import { View, Text, SafeAreaView, TextInput, Modal, 
   TouchableOpacity, StyleSheet, Alert, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import { useVideoContext, VideoItem } from '../context/VideoContext';
 import Svg, { Line } from 'react-native-svg';
@@ -157,6 +156,12 @@ const SessionPlayer = () => {
     setIsRecording(false);
   }, [isRecording]);
 
+  const handleModalCancel = async () => {
+    setTitleModalVisible(false);
+    setPendingVideoUri(null);
+    navigation.navigate('SessionScreen');
+  }
+
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
@@ -233,14 +238,19 @@ const SessionPlayer = () => {
       >
         <View style={styles.modal}>
           <TextInput
+            style={styles.inputText}
             placeholder="Enter video title"
             value={videoTitle}
             onChangeText={setVideoTitle}
-            style={styles.inputText}
           />
-          <TouchableOpacity onPress={handleModalClose}>
-            <Text>OK</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.button, styles.okButton]} onPress={handleModalClose}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleModalCancel}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
@@ -273,14 +283,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 20,
   },
-  inputText: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#03adfc',
-    marginBottom: 20,
-    paddingTop: 20,
-    width: 75,
-    alignSelf: 'center',
-  },
   controlsOverlay: {
     position: 'absolute',
     bottom: 10,
@@ -295,6 +297,45 @@ const styles = StyleSheet.create({
   stopButton: {
     alignItems: 'center',
     marginBottom: 0,
+  },
+  inputText: {
+    width: 250,
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    // iOS Shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Android Elevation
+    elevation: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 250,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  okButton: {
+    backgroundColor: 'green',
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

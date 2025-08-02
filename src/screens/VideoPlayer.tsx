@@ -177,6 +177,12 @@ const VideoPlayer = () => {
     })();
   }, []);
 
+  const handleModalCancel = async () => {
+    setTitleModalVisible(false);
+    setPendingVideoUri(null);
+    navigation.navigate('VideoScreen');
+  }
+
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
@@ -372,14 +378,19 @@ const VideoPlayer = () => {
       >
         <View style={styles.modal}>
           <TextInput
+            style={styles.inputText}
             placeholder="Enter video title"
             value={videoTitle}
             onChangeText={setVideoTitle}
-            style={styles.inputText}
           />
-          <TouchableOpacity onPress={handleModalClose}>
-            <Text>OK</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.button, styles.okButton]} onPress={handleModalClose}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleModalCancel}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
       <Modal
@@ -388,11 +399,11 @@ const VideoPlayer = () => {
       >
         <View style={styles.modal}>
           <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Level</Text>
-          <View style={styles.buttonContainer}>
+          <View style={styles.buttonStrokeContainer}>
             {strokes.map((stroke) => (
               <TouchableOpacity 
                 key={stroke} 
-                style={styles.button} 
+                style={styles.buttonStroke} 
                 onPress={() => {
                   setStrokeModalVisible(false);
                   setSelectedStroke(stroke);
@@ -452,14 +463,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 20,
   },
-  inputText: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#03adfc',
-    marginBottom: 20,
-    paddingTop: 20,
-    width: 75,
-    alignSelf: 'center',
-  },
   linesContainer: {
     position: 'absolute',
     top: 0,
@@ -467,22 +470,83 @@ const styles = StyleSheet.create({
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
   },
-  button: {
-   borderColor: '#03adfc',
-   borderWidth: 1,
-   borderRadius: 5,
-   padding: 10,
-   margin: 5,
-   width: '40%',
-   alignItems: 'center',
+  buttonStroke: {
+    borderColor: '#03adfc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    margin: 5,
+    width: '40%',
+    alignItems: 'center',
+    backgroundColor: '#fff', // background needed for shadow visibility
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    // Android shadow
+    elevation: 4,
  },
- buttonContainer: {
+ buttonStrokeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '80%',
     marginTop: 20,
     alignItems: 'center',
     flexWrap: 'wrap',
+  },
+  inputText: {
+    width: 250,
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    // iOS Shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Android Elevation
+    elevation: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 250,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  okButton: {
+    backgroundColor: 'green',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    // Android shadow
+    elevation: 4,
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    // Android shadow
+    elevation: 4,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
