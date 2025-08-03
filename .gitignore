@@ -123,3 +123,4 @@ runs
 tennis_session/tennis_ball_inference/*.pt
 **/tennis-tracker-20/
 *.zip
+**/tennis_court_train/data

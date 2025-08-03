@@ -66,11 +66,11 @@ const SessionPlayer = () => {
   const device = devices.find((d) => d.position === 'back');
   const [objects, setObjects] = useState<ObjectType[]>(defaultObject);
   const [isRecording, setIsRecording] = useState(false);
+  let frameNum = 0  // what frame we are on
   const [videoTitle, setVideoTitle] = useState('');
   const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
   const [titleModalVisible, setTitleModalVisible] = useState(false);
-  const { videos } = useVideoContext();
-  const { addSVideo } = useVideoContext();
+  const { addVideo } = useVideoContext();
 
   const desiredWidth = 1920;
   const desiredHeight = 1080;
@@ -122,6 +122,9 @@ const SessionPlayer = () => {
       sendToJS(resultsCopy); // Calls JS safely
     }
     else {
+        //const courtPoints = detectCourt(frame);
+        //console.log("calling detect court if frame 200 only ", courtPoints);
+    
       const results = detectObjects(frame) as unknown as ObjectType[];
       const resultsCopy: ObjectType[] = [...defaultObject];
       // turn 90 degrees clockwise
@@ -134,9 +137,11 @@ const SessionPlayer = () => {
         On iOS and Android, front camera preview is usually mirrored by default.
         */
       // Log frame and dimensions for debugging
-      console.log('Frame dimensions:', frame.width, frame.height);
-      console.log('Screen dimensions:', dimensions.width, dimensions.height);
-      console.log('X factor:', xFactor, 'Y factor:', yFactor);
+      if (__DEV__) {
+        console.log('Frame dimensions:', frame.width, frame.height);
+        console.log('Screen dimensions:', dimensions.width, dimensions.height);
+        console.log('X factor:', xFactor, 'Y factor:', yFactor);
+      }
 
       // Make a new array with scaled x, y, width, height
       
@@ -189,36 +194,6 @@ const SessionPlayer = () => {
     })();
   }, []);
 
-  // Create thumbnail for the video
-  const createVideoThumbnail = async (videoUri: string) => {    
-    try {
-      const thumbnail = await createThumbnail({
-        url: videoUri,
-        timeStamp: 1000, // 1 second into the video
-      });
-      return thumbnail.path;
-    } catch (error) {
-      console.error('Error creating thumbnail:', error);
-      return null;
-    }
-  }
-
-  // Ask for permission before saving the file
-  async function saveVideoToGallery(videoUri: string) {
-    const hasPermission = await requestGalleryPermission();
-    if (!hasPermission) {
-      console.warn('No permission to save video.');
-      return;
-    }
-
-    try {
-      await CameraRoll.save(videoUri, {type: 'video'});
-      console.log('Video saved to gallery');
-    } catch (error) {
-      console.error('Failed to save video', error);
-    }
-  }
-
   // Handle start recording
   const handleStartRecording = useCallback(async () => {
     if (!cameraRef.current || isRecording) return;
@@ -227,27 +202,12 @@ const SessionPlayer = () => {
       await cameraRef.current.startRecording({
         onRecordingFinished: async (video) => {
           try {
-            let vidNum = await AsyncStorage.getItem("NumSVideos");
-            if (vidNum === null) {
-              vidNum = "5";
-            }
-            /*
-            for (let i = 0; i < videos.length; i++) {
-              console.log(videos[i].id);
-            }
-              */
-            //AsyncStorage.setItem("NumSVideos", vidNum);
-            setVideoTitle("Video " + vidNum);
-            console.log("Initial Title: " + videoTitle + ", vidNum: " + vidNum);
-            await AsyncStorage.setItem("NumSVideos", (parseInt(vidNum) + 1).toString());
-            console.log("NumVideos value stored: ", await AsyncStorage.getItem("NumSVideos"));
             setPendingVideoUri(video.path.startsWith('file://') ? video.path : `file://${video.path}`);
             setTitleModalVisible(true);
           } catch (e) {
             Alert.alert('Error', 'Failed to save video to gallery.');
           }
           setIsRecording(false);
-          //navigation.navigate('SessionScreen'); // <-- Navigate away after recording
         },
         onRecordingError: (error) => {
           Alert.alert('Recording Error', error.message || 'Unknown error');
@@ -258,28 +218,27 @@ const SessionPlayer = () => {
       setIsRecording(false);
       Alert.alert('Error', 'Could not start recording.');
     }
-  }, [isRecording, navigation, addSVideo]);
+  }, [isRecording]);
 
   const handleStopRecording = useCallback(() => {
     if (cameraRef.current && isRecording) {
       cameraRef.current.stopRecording();
     }
+    setIsRecording(false);
   }, [isRecording]);
+
+  const handleModalCancel = async () => {
+    setTitleModalVisible(false);
+    setPendingVideoUri(null);
+    navigation.navigate('SessionScreen');
+  }
 
   const handleModalClose = async () => {
     if (!pendingVideoUri) return;
     try {
-      await saveVideoToGallery(pendingVideoUri);
-      const posterUri = await createVideoThumbnail(pendingVideoUri);
-      for (let i = 0; i < videos.length; i++) {
-        console.log(videos[i].vidId);
-      }
-      console.log("Attempting to add: " + videoTitle);
-      AsyncStorage.getAllKeys().then(keys => {
-        keys.forEach(key => {
-          console.log("Key: " + key);
-        });
-      });
+      const savedUri = await saveVideoToGallery(pendingVideoUri);
+      setPendingVideoUri(savedUri);
+      const poster = await createVideoThumbnail(pendingVideoUri);
       console.log("Adding now");
       console.log("Objects: ", objects)
       //addSVideo(videoTitle, pendingVideoUri, posterUri || '', objects);
@@ -370,14 +329,20 @@ const SessionPlayer = () => {
       >
         <View style={styles.modal}>
           <TextInput
+            autoFocus={true}
+            style={styles.inputText}
             placeholder="Enter video title"
             value={videoTitle}
             onChangeText={setVideoTitle}
-            style={styles.inputText}
           />
-          <TouchableOpacity onPress={handleModalClose}>
-            <Text>OK</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.button, styles.okButton]} onPress={handleModalClose}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleModalCancel}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
@@ -409,14 +374,6 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 20,
-  },
-  inputText: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#03adfc',
-    marginBottom: 20,
-    paddingTop: 20,
-    width: 75,
-    alignSelf: 'center',
   },
   controlsOverlay: {
     position: 'absolute',

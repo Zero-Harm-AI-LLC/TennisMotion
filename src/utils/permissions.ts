@@ -29,19 +29,19 @@ export const requestCameraPermission = async (): Promise<
 
 export async function requestGalleryPermission() {
   if (Platform.OS === 'ios') {
-    const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+    let status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
     if (status === RESULTS.GRANTED) {
       console.log('Photo library permission granted.');
-      return status;
-    } else if (status === RESULTS.DENIED) {
-      return await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      return true;
     } else {
-      console.log('Photo library permission blocked. Please check your settings.');
-      // Handle the blocked status, potentially open app settings for the user to enable the permission.
-      return status;
-    }
+      status = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      if (status === RESULTS.GRANTED) {
+        return true;
+      }
+      return false;
+    } 
   }
-  return RESULTS.GRANTED; // Android handled differently
+  return true; // Android handled differently
 }
 
 const requestAndroidCameraPermission =

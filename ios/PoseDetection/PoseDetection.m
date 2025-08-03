@@ -1,11 +1,12 @@
 #import <MLKitPoseDetection/MLKitPoseDetection.h>
 #import <MLKitPoseDetectionCommon/MLKitPoseDetectionCommon.h>
+#import <MLKitVision/MLKVisionImage.h>
+#import <MLKitVision/MLKVision3DPoint.h>
 #import <VisionCamera/FrameProcessorPlugin.h>
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
 #import <VisionCamera/VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
 #import <React/RCTBridgeModule.h>
-@import MLKitVision;
 
 @interface PoseDetectionPlugin : FrameProcessorPlugin
 @end
