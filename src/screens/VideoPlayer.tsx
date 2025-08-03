@@ -542,10 +542,6 @@ const styles = StyleSheet.create({
     // Android shadow
     elevation: 4,
   },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
 });
 
 export default VideoPlayer;

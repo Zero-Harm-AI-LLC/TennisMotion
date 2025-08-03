@@ -11,6 +11,26 @@
 @interface PoseDetectionPlugin : FrameProcessorPlugin
 @end
 
+UIImageOrientation imageOrientationFromDeviceOrientation(UIDeviceOrientation deviceOrientation, BOOL isFrontFacing) {
+    switch (deviceOrientation) {
+        case UIDeviceOrientationPortrait:
+            return isFrontFacing ? UIImageOrientationLeftMirrored : UIImageOrientationRight;
+
+        case UIDeviceOrientationLandscapeLeft:
+            return isFrontFacing ? UIImageOrientationDownMirrored : UIImageOrientationUp;
+
+        case UIDeviceOrientationLandscapeRight:
+            return isFrontFacing ? UIImageOrientationUpMirrored : UIImageOrientationDown;
+
+        case UIDeviceOrientationPortraitUpsideDown:
+            return isFrontFacing ? UIImageOrientationRightMirrored : UIImageOrientationLeft;
+
+        default:
+            // Default to portrait for safety
+            return isFrontFacing ? UIImageOrientationLeftMirrored : UIImageOrientationRight;
+    }
+}
+
 @implementation PoseDetectionPlugin
 
 MLKPoseDetectorOptions *__options;
@@ -40,7 +60,9 @@ MLKPoseDetectorOptions *__options;
     }
 
     CMSampleBufferRef buffer = frame.buffer;
-    UIImageOrientation orientation = frame.orientation;
+    UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+    BOOL isFrontCamera = NO; // change this if you allow front camera
+    UIImageOrientation orientation = imageOrientationFromDeviceOrientation(deviceOrientation, isFrontCamera);
     MLKVisionImage *image = [[MLKVisionImage alloc] initWithBuffer:buffer];
     image.orientation = orientation;
     

@@ -17,6 +17,7 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useVideoContext } from '../context/VideoContext';
 import Animated, { defineAnimation, useAnimatedProps } from 'react-native-reanimated';
+import { saveVideoToGallery, createVideoThumbnail } from '../utils/gallery';
 
 type RootStackParamList = {
   SessionScreen: undefined;
