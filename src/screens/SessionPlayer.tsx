@@ -3,9 +3,7 @@ import 'react-native-reanimated';
 import { View, Text, SafeAreaView, TextInput, Modal, TouchableOpacity, StyleSheet, Alert, useWindowDimensions, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
-import { createThumbnail } from 'react-native-create-thumbnail';
+import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
 import Svg, { Line, Rect } from 'react-native-svg';
 import { detectObjects} from '../utils/detectObjects';
 import { ObjectType } from '../utils/types';
@@ -14,7 +12,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useVideoContext } from '../context/VideoContext';
 import Animated, { defineAnimation, useAnimatedProps } from 'react-native-reanimated';
 import { saveVideoToGallery, createVideoThumbnail } from '../utils/gallery';
@@ -26,7 +23,7 @@ type RootStackParamList = {
 
 const AnimatedBox = Animated.createAnimatedComponent(Rect);
 
-const usePosition = (object) => {
+const usePosition = (object: ObjectType) => {
   if (object) {
     console.log("X-Val: ", object.x*200)
     return ( 
@@ -350,6 +347,7 @@ const SessionPlayer = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -391,12 +389,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 0,
   },
+  inputText: {
+    width: 250,
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    // iOS Shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Android Elevation
+    elevation: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 250,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  okButton: {
+    backgroundColor: 'green',
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   linesContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      height: Dimensions.get('window').height,
-      width: Dimensions.get('window').width,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
   },
 });
 

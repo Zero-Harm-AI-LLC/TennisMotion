@@ -335,9 +335,6 @@ function Info(props: { type: string; info }) {
 }
 
 
-
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
