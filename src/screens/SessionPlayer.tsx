@@ -1,12 +1,12 @@
 import React, { useEffect,useRef, useState, useMemo, useCallback } from 'react';
 import 'react-native-reanimated';
-import { View, Text, SafeAreaView, TextInput, Modal, 
-  TouchableOpacity, StyleSheet, Alert, useWindowDimensions } from 'react-native';
+import { View, Text, SafeAreaView, TextInput, Modal, TouchableOpacity, StyleSheet, Alert, useWindowDimensions, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
-import { requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
-import { useVideoContext, VideoItem } from '../context/VideoContext';
-import Svg, { Line } from 'react-native-svg';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import { requestGalleryPermission, requestCameraPermission, requestMicrophonePermission } from '../utils/permissions';
+import { createThumbnail } from 'react-native-create-thumbnail';
+import Svg, { Line, Rect } from 'react-native-svg';
 import { detectObjects} from '../utils/detectObjects';
 import { ObjectType } from '../utils/types';
 import { Worklets } from 'react-native-worklets-core';
@@ -14,13 +14,48 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { saveVideoToGallery, createVideoThumbnail } from '../utils/gallery';
-import { detectCourt } from '../utils/detectCourt';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useVideoContext } from '../context/VideoContext';
+import Animated, { defineAnimation, useAnimatedProps } from 'react-native-reanimated';
 
 type RootStackParamList = {
   SessionScreen: undefined;
   // add other screens here if needed
 };
+
+const AnimatedBox = Animated.createAnimatedComponent(Rect);
+
+const usePosition = (object) => {
+  if (object) {
+    console.log("X-Val: ", object.x*200)
+    return ( 
+      useAnimatedProps(() => ({
+        x: object.x*200 + 100,
+        y: object.y*200 + 100,
+        width: object.width*200 + 100,
+        height: object.height*200 + 100,
+      }))
+    );
+  }
+  else {
+    return (
+      useAnimatedProps(() => ({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      }))
+    );
+  }
+};
+
+const defaultObject = [
+  {class: 'tennis-ball', confidence: 0, height: 0, width: 0, x: 0, y: 0},
+  {class: 'player-front', confidence: 0, height: 0, width: 0, x: 0, y: 0},
+  {class: 'player-back', confidence: 0, height: 0, width: 0, x: 0, y: 0}
+]
+
+
 
 const SessionPlayer = () => {
   const cameraRef = useRef<Camera>(null);
@@ -29,7 +64,7 @@ const SessionPlayer = () => {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const devices = useCameraDevices();
   const device = devices.find((d) => d.position === 'back');
-  const [objects, setObjects] = useState<ObjectType[]>([]);
+  const [objects, setObjects] = useState<ObjectType[]>(defaultObject);
   const [isRecording, setIsRecording] = useState(false);
   let frameNum = 0  // what frame we are on
   const [videoTitle, setVideoTitle] = useState('');
@@ -42,6 +77,10 @@ const SessionPlayer = () => {
   const desiredFps = 30; // You can set to 60 if your device supports it
 
   const dimensions = useWindowDimensions();
+
+  const ballPosition = usePosition(objects[0]);
+  const frontPlayerPosition = usePosition(objects[1]);
+  const backPlayerPosition = usePosition(objects[2]);
 
   const format = useMemo(() => {
     if (!device?.formats) return undefined;
@@ -56,12 +95,21 @@ const SessionPlayer = () => {
     );
   }, [device, desiredWidth, desiredHeight, desiredFps]);
 
-  const handlePositions = useCallback((results: any) => {
+  const handlePositions = useCallback((results: ObjectType[]) => {
     // This runs on the JS thread.
     // You can call setState, navigation, etc. here
-    frameNum = frameNum + 1;
-    console.log("Session player current frame", frameNum);
-    setObjects(results);
+    console.log(results)
+    setObjects(results)
+    console.log("Final Objects: ", objects)
+    /*
+    setObjects(prevObjects => {
+      const newObjects = prevObjects.concat(results);
+      console.log(newObjects);
+      //return results
+      return newObjects;
+    });
+    */
+
   }, []);
   const sendToJS = Worklets.createRunOnJS(handlePositions);
 
@@ -69,8 +117,8 @@ const SessionPlayer = () => {
     'worklet';
 
     if (!isRecording) {
-      return;
-      const resultsCopy: ObjectType[] = [];
+      const resultsCopy: ObjectType[] = [...defaultObject];
+      console.log("defaultObject not recording: ", resultsCopy)
       sendToJS(resultsCopy); // Calls JS safely
     }
     else {
@@ -78,7 +126,7 @@ const SessionPlayer = () => {
         //console.log("calling detect court if frame 200 only ", courtPoints);
     
       const results = detectObjects(frame) as unknown as ObjectType[];
-
+      const resultsCopy: ObjectType[] = [...defaultObject];
       // turn 90 degrees clockwise
       // This is necessary because the camera frame is rotated 90 degrees clockwise
       // and we need to adjust the coordinates accordingly.
@@ -96,19 +144,42 @@ const SessionPlayer = () => {
       }
 
       // Make a new array with scaled x, y, width, height
-      /*
-      const resultsCopy = results.map(obj => ({
+      
+      const adjustedResults = results.map(obj => ({
         ...obj,
         x: obj.x * xFactor,
         y: obj.y * yFactor
       }));
 
+      const completeResults: ObjectType[] = []
+      let i = 0
+      if (adjustedResults.length > i && adjustedResults[i].class === 'tennis-ball') {
+        completeResults.push(adjustedResults[i])
+        i++
+      } else {
+        completeResults.push(resultsCopy[0])
+        console.log("completeResults 1: ", completeResults)
+      }
+      if (adjustedResults.length > i && adjustedResults[i].class === 'player-front') {
+        completeResults.push(adjustedResults[i])
+        i++
+      } else {
+        completeResults.push(resultsCopy[1])
+        console.log("completeResults 2: ", completeResults)
+      }
+      if (adjustedResults.length > i && adjustedResults[i].class === 'player-back') {
+        completeResults.push(adjustedResults[i])
+        i++
+      } else {
+        completeResults.push(resultsCopy[2])
+        console.log("completeResults 4: ", completeResults)
+      }
+      
       console.log('Tennis objects position:', results);
       console.log('Adjusted Tennis objects position:', resultsCopy);
-      sendToJS(resultsCopy); // Calls JS safely
-      */
-      const resultsCopy: ObjectType[] = [];
-      sendToJS(resultsCopy); // Calls JS safely
+      console.log('Complete Results: ', completeResults)
+      sendToJS(completeResults); // Calls JS safely
+      //sendToJS(adjustedResults)
     }
   }, [sendToJS]);
 
@@ -169,9 +240,10 @@ const SessionPlayer = () => {
       setPendingVideoUri(savedUri);
       const poster = await createVideoThumbnail(pendingVideoUri);
       console.log("Adding now");
-      const item : VideoItem = {title: videoTitle, uri: savedUri, poster: poster || '', 
-                                stroke: 'session', data: objects};
-      addVideo(item);
+      console.log("Objects: ", objects)
+      //addSVideo(videoTitle, pendingVideoUri, posterUri || '', objects);
+      //console.log("Video successfully added: " + videoTitle);
+      //await CameraRoll.save(pendingVideoUri, { type: 'video' });
       setTitleModalVisible(false);
       setPendingVideoUri(null);
       navigation.navigate('SessionScreen');
@@ -206,6 +278,8 @@ const SessionPlayer = () => {
     );
   }
 
+  console.log("Objects: ", objects)
+
   return (
     <View style={styles.container}>
       <Camera
@@ -220,6 +294,23 @@ const SessionPlayer = () => {
         onError={(error) => console.error('Camera error:', error)}
         frameProcessor={frameProcessor}
       />
+      <Svg
+        height={dimensions.height}
+        width={dimensions.width}
+        style={styles.linesContainer}
+      >
+        {objects.map((obj) => (
+          <Rect
+            x={obj.x}
+            y={obj.y}
+            width={obj.width}
+            height={obj.height}
+            fill="transparent"
+            stroke="red"
+            strokeWidth="3"
+          />
+        ))}
+      </Svg>
       <View style={styles.controlsOverlay}>
         {!isRecording ? (
           <TouchableOpacity style={styles.recordButton} onPress={handleStartRecording}>
@@ -299,44 +390,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 0,
   },
-  inputText: {
-    width: 250,
-    height: 40,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    // iOS Shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    // Android Elevation
-    elevation: 5,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 250,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 5,
-    paddingVertical: 10,
-    borderRadius: 25,
-    alignItems: 'center',
-  },
-  okButton: {
-    backgroundColor: 'green',
-  },
-  cancelButton: {
-    backgroundColor: 'red',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  linesContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      height: Dimensions.get('window').height,
+      width: Dimensions.get('window').width,
   },
 });
 
