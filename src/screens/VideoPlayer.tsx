@@ -399,7 +399,7 @@ const VideoPlayer = () => {
         visible={strokeModalVisible}
       >
         <View style={styles.modal}>
-          <Text style={{color: '#03adfc', fontSize: 24, marginBottom: 20}}>Level</Text>
+          <Text style={{color: '#007AFF', fontSize: 24, marginBottom: 20}}>Stroke Type</Text>
           <View style={styles.buttonStrokeContainer}>
             {strokes.map((stroke) => (
               <TouchableOpacity 
@@ -410,7 +410,7 @@ const VideoPlayer = () => {
                   setSelectedStroke(stroke);
                 }}
               >
-                <Text>{stroke}</Text>
+                <Text style={styles.buttonText}>{stroke}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -472,21 +472,12 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width,
   },
   buttonStroke: {
-    borderColor: '#03adfc',
-    borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
     margin: 5,
     width: '40%',
     alignItems: 'center',
-    backgroundColor: '#fff', // background needed for shadow visibility
-    // iOS shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    // Android shadow
-    elevation: 4,
+    backgroundColor: '#007AFF',
  },
  buttonStrokeContainer: {
     flexDirection: 'row',
@@ -495,6 +486,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
     flexWrap: 'wrap',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center', // centers text inside the Text component
+    width: '100%',        // wrap text to multiple lines
   },
   inputText: {
     width: 250,
