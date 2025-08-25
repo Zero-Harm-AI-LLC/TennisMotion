@@ -1,5 +1,5 @@
 # TennisMotion
-TennisMotion is an AI-powered coaching application that helps players refine their techniques by comparing them to expert-level techniques
+TennisMotion is an AI-powered coaching application that helps players refine their techniques by comparing them to expert-level techniques. <br>**This internship project focuses on exploring the application of AI for training in tennis, including player movements, ball trajectories, and technical skills. Some ML models we explored were YOLO for player and ball detection, ResNet for tennis court keypoints detection and MLKit Pose Detection for player techniques.**
 
 ## Features
 - Splash screen
